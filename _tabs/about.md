@@ -5,7 +5,7 @@ order: 4
 ---
 
 # NIRAJ KHAREL
-**thenirajkharel@gmail.com**
+**thenirajkharel@gmail.com**<br>
 **Kathmandu, Nepal**
 
 ### PROFESSIONAL SUMMARY
