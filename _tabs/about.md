@@ -10,7 +10,7 @@ order: 4
 
 ### PROFESSIONAL SUMMARY
 
-Experienced penetration tester with almost 3 years of work exposure in Offensive side of Cyber Security. Has performed Security Assessment on more than 25 different organizations including Financial Institutions, Government Bodies, Payment Gateway and INGOs.
+Experienced penetration tester with over 3 years of work exposure in Offensive side of Cyber Security. Has performed Security Assessment on more than 25 different organizations including Financial Institutions, Government Bodies, Payment Gateway and INGOs.
 
 ### SKILLS
 - Web, Network and Mobile Application VA and Exploitation.
