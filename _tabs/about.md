@@ -6,7 +6,7 @@ order: 4
 
 # NIRAJ KHAREL
 **thenirajkharel@gmail.com**
-**Kathmandu, Bagmati 44600**
+**Kathmandu, Nepal**
 
 ### PROFESSIONAL SUMMARY
 
