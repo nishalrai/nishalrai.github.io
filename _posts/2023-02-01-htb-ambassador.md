@@ -1,7 +1,7 @@
 ---
 title: HTB - Ambassador
 author: nirajkharel
-date: 2019-08-08 14:10:00 +0800
+date: 2023-01-30 14:10:00 +0800
 categories: [HackTheBox]
 tags: [HTB, HackTheBox]
 render_with_liquid: false

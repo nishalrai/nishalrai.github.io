@@ -1,7 +1,7 @@
 ---
 title: Attacking and Defending AD
 author: nirajkharel
-date: 2023-03-05 20:55:00 +0800
+date: 2022-08-09 20:55:00 +0800
 categories: [Active Directory Pentesting, Windows Based]
 tags: [Active Directory, AD Pentesting, AD Defending]
 ---

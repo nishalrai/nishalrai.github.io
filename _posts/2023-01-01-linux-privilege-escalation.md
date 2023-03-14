@@ -1,7 +1,7 @@
 ---
 title: Privilege Escalation - Linux
 author: nirajkharel
-date: 2023-03-05 20:55:00 +0800
+date: 2022-09-05 20:55:00 +0800
 categories: [Privilege Escalation, Linux]
 tags: [Privilege Escalation]
 ---
