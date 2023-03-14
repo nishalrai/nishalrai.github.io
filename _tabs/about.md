@@ -5,7 +5,7 @@ order: 4
 ---
 
 # NIRAJ KHAREL
-**thenirajkharel@gmail.com | +977 9813869464**
+**thenirajkharel@gmail.com**
 **Kathmandu, Bagmati 44600**
 
 ### PROFESSIONAL SUMMARY
