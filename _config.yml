@@ -24,7 +24,7 @@ title: Niraj Kharel                         # the main title
 tagline: Find My Offensive Security Blogs   # it will display as the sub-title
 
 description: >-                        # used by seo meta and the atom feed
-  Vulnerability Assessment, Penetration Testing, HackTheBox, HTB, OSCP.
+  Vulnerability Assessment, Penetration Testing, HackTheBox, HTB.
 
 # fill in the protocol & hostname for your site, e.g., 'https://username.github.io'
 url: 'https://nirajkharel.com.np'
@@ -39,7 +39,7 @@ social:
   # Change to your full name.
   # It will be displayed as the default author of the posts and the copyright owner in the Footer
   name: Niraj Kharel
-  email: thenirajkharel@gmmail.com             # change to your email address
+  email: thenirajkharel@gmail.com             # change to your email address
   links:
     # The first element serves as the copyright owner's link
     - https://twitter.com/nirajkharel7     # change to your twitter homepage
