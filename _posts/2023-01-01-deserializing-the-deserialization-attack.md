@@ -1,7 +1,7 @@
 ---
 title: Deserializing the Deserialization attack
 author: nirajkharel
-date: 2023-03-19 20:55:00 +0800
+date: 2023-03-18 20:55:00 +0800
 categories: [Web Pentesting, Deserialization]
 tags: [Web Pentesting, Deserialization]
 ---
