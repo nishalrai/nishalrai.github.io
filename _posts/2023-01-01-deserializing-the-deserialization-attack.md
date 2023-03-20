@@ -144,7 +144,7 @@ There are various serialization formats available.
 |                       	| [Node Serialize](https://www.npmjs.com/package/node-serialize)        	|
 
 ## What is Insecure Deserialization and how does it occur?
-Insecure Deserialization also known as object injection is a vulnerability which occurs when user-supplied data in deserialized by an application. This can allow an attacker to manipulate or inject malicious code into the serialized object, and when it is deserialized into the application side, the malicious code submitted can change the angle of attack resulting the data exfiltration, remote code execution, authorization bypass and so on.
+Insecure Deserialization also known as object injection is a vulnerability which occurs when user-supplied data is deserialized by an application. This can allow an attacker to manipulate or inject malicious code into the serialized object, and when it is deserialized into the application side, the malicious code submitted can change the angle of attack resulting the data exfiltration, remote code execution, authorization bypass and so on.
 
 Exploiting this vulnerability is a not as easy as explained above. It requires a good understanding of programming languages and their object-oriented programming (OOP) concepts. Moreover, certain prerequisites should be in place in the vulnerable code for successful execution.
 
