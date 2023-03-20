@@ -338,6 +338,7 @@ def deserialization():
 - In order to exploit it, we need to create a serialize data. Pickle allows different objects to declare how they should be pickled using the **__reduce__** method. Whenever an object is pickled, the **__reduce__** method defined by it gets called. This method returns either a string, which may represent the name of a Python global, or a tuple describing how to reconstruct this object when unpickling.
 
 - In the below code we are just defining a class test123 which contains the **__reduce__method**, it returns a tuple. And then an object is built which calls the os.system and will execute the command passed on the tuple.
+
 ```python
 import os
 import pickle
