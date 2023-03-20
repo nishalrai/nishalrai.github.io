@@ -15,8 +15,6 @@ Before jumping into the attacks, lets first clear the concept of serialization a
 ## Serialization
 It is a process of transforming a data object into the series of bytes. This is done while transmitting the data over the network or for storing it since the object's state can be retained and also the storage requirement can be reduced making it more efficient to transmit over the network. We are talking about the same objects we listen on OOP programming. Example, if a car is a class than object is a class instance that allows us to use variables and methods from inside the class. A car can have different properties like model name, color, engine size and so on and each time you want to add a new car in your code, you create a car object using the properties defiend like model name, color, engine size and so on.
 
-The code has two classes - ReadFile and User. The ReadFile class defines a **__toString()** method which returns the contents of the file specified by the filename property /etc/passwd. The User class has two properties - $username and $isAdmin, and a method called PrintData() which prints whether the user is an admin or not based on the value of the $isAdmin property.
-
 Let's create a car object here.
 ```python
 python3
