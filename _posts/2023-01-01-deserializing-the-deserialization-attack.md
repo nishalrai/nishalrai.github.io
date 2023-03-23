@@ -459,3 +459,86 @@ b'gASVOgAAAAAAAACMBXBvc2l4lIwGc3lzdGVtlJOUjB9uYyAxOTIuMTY4LjEuNjQgMTMzNyAtZSAvYm
 ![image](https://user-images.githubusercontent.com/47778874/226403735-afca20b3-1e38-4562-b5f7-af66b2aefdf9.png)
 
 **Learn about Python Deserialization Attack more on:** https://davidhamann.de/2020/04/05/exploiting-python-pickle/ 
+
+### Deserialization on PHP
+PHP performs serialization and deserialization with the native methods **serialize()** and **unserialize()**. Insecure Deserialization occurs when the user supplied data is deserialized by an application. These are generally done through cookie session, **POST/GET** variables on the web requests and web sockets as well.
+
+Let's go along with the Lab. We will use the lab from [PortSwigger](https://portswigger.net/web-security/deserialization/exploiting)
+
+**Serialized Objects Manipulation**<br>	
+The serialized object holds various attributes that define the task to be executed upon deserialization. For instance, in applications that use PHP session cookies, these cookies can be serialized objects that identify the user who logged in and their associated privileges. If someone alters the attribute values of the serialized object, the application will execute the modified values upon deserialization. Let's explore it on the Lab.
+- Navigate to the lab: https://portswigger.net/web-security/deserialization/exploiting/lab-deserialization-modifying-serialized-objects
+- Click on Access the Lab, you might need to login into the lab using your valid credentials.
+![image](https://user-images.githubusercontent.com/47778874/227130095-c80439df-4c25-41f9-9e16-ee8c2ed1fbcd.png)
+- A simple shopping application is show, navigate into the login section and enter the credentials `wiener:peter`
+![image](https://user-images.githubusercontent.com/47778874/227140886-3a31c504-b9f4-4edb-b599-78f70d9d888a.png)
+- Intercept the request in burpsuite.
+![image](https://user-images.githubusercontent.com/47778874/227141421-b8cb7d80-45f9-4567-a7e5-429799da8e6d.png)
+- We can see the session cookie on the request header. Let's decode the cookies to view the serialized data. You can do it via base64 decoder in burpsuite.
+![image](https://user-images.githubusercontent.com/47778874/227141870-9b2e7da2-1219-411c-aa7a-e324575ba00d.png)
+- The serialized object is as follow:
+```bash
+O:4:"User":2:{s:8:"username";s:6:"wiener";s:5:"admin";b:0;}
+```
+- Change the boolean value of attribute `admin` to 1. Base64 encode it.!
+![image](https://user-images.githubusercontent.com/47778874/227142983-9e12c310-7a0c-46a7-bd65-94f5bd64df5a.png)
+- Navigate to account section and then intercept the request again, then replace the cookie value, we can see the admin panel on it.
+![image](https://user-images.githubusercontent.com/47778874/227142873-32ca3b99-5752-4b6b-b112-66987f7f1fde.png)
+- Click on Admin Panel section, we can see that the user have an admin privilege now.
+![image](https://user-images.githubusercontent.com/47778874/227143207-6b478c9f-9d1f-4004-a35b-685ee8d45bf3.png)
+- Click on Delete for Carlos user, intercept the request and replace the cookie value, the lab will be solved.
+- In this way, an attacker can manipulate the attributes on the serialized data to modify the workflow of an application.
+
+
+**PHP Data Types and Comparisons Manipulation** <br>		
+PHP Data Types and their comparisons are slightly different than other programming languages. PHP has a loose comparisons regarding data types which means, when commparing between string `"10"` and an integer `10` if the comparison operator is `==`, then it will return True. To compare the data types as well, the comparison operator should be `===` which will return False.
+
+Also, while there is a comparison between an integer `10` and a alphanumeric characters `10 is what it is` then, PHP will check if the alphanumeric character starts with the numeric value or not, if it does, it will ignore the rest of the string and will only compare the numeric value. So the PHP will interpret `10 == "10 is what it is"` into `10 = "10"`.
+
+Also, if above alphanumeric characters does not contains any numbers than it will convert it into `0` since it has 0 numbers in int. 
+
+Let's jump into the lab. You can find the lab from [Portswigger here](https://portswigger.net/web-security/deserialization/exploiting/lab-deserialization-modifying-serialized-data-types).
+- Login into the portswigger account and click on Access the lab as shown below.
+![image](https://user-images.githubusercontent.com/47778874/227147374-0923f430-a5d9-4e49-b1fd-634755ae71c4.png)
+- Navigate to My Account section, enter provided login details `wiener:peter`.
+- If we view the HTTP request, we can find the session cookie
+![image](https://user-images.githubusercontent.com/47778874/227150947-e36bae44-7978-455f-b177-7e09f1d19a9a.png)
+- Decode it using any Base64 decoder.
+![image](https://user-images.githubusercontent.com/47778874/227151215-8bd971ba-72d8-46b3-b0f9-8950d7554936.png)
+- The serialized object would be
+```bash
+O:4:"User":2:{s:8:"username";s:6:"wiener";s:12:"access_token";s:32:"cinv7qvszrn92offfla5szz0sp1bf0e5";}
+```
+- We need to replace the `username` value from `wiener` to `administrator` since the objective is to login as administrator user which makes our serialized object as,
+```bash
+O:4:"User":2:{s:8:"username";s:13:"administrator";s:12:"access_token";s:32:"cinv7qvszrn92offfla5szz0sp1bf0e5";}
+```
+- Note that the length of string will be changed since `administrator` has 13 characters.
+- As we discussed above, if the comparison operator `==` is used and if we compare between any `strings` and `0`, it will return `True` because `0` means there is no numeric characters and the comparison between any string characters and no numeric characters will return True on PHP. Thefore our final serialized object would be.
+```bash
+O:4:"User":2:{s:8:"username";s:13:"administrator";s:12:"access_token";i:0;}
+```
+- Note that the `access_token` needs to be an integer, and for integer value there would not be the length.
+- Encode it with Base64 encoder
+![image](https://user-images.githubusercontent.com/47778874/227176183-787f96c0-bbde-4f97-aec5-d33d64f88a67.png)
+- Click on My Account section, intercept the request and replace the session token.
+- There would be an `Admin Panel` added on the navigation bar.
+- Click on `Admin Panel` and replace the session again.
+![image](https://user-images.githubusercontent.com/47778874/227177854-189e57f2-329e-48bc-b63c-18e04255502b.png)
+- Click on delete for Carlos user and replace the session again.
+- The user Carlos will be deleted and a lab will be solved.
+
+**Arbitrary objects and Magic Methods**<br>
+Magic methods are the reserved methods and aimed to perform certial tasks on PHP. This generally consists `__methodname()` as a syntax and are called automatically when particular conditions are met.	It is used to predetermine that which part or what code is to be executed when the corresponding events occurs. 
+
+Magic methods generally does not contains vulnerabilities on it's own, but if the user supplied data is configured to execute such methods, an attacker can invoke such methods with a malicious payload to override the workflow of the code. Let's focus on some important magic methods that we need to understand.<br>
+- **__construct**
+   - The magic method `__construct()` will be triggered and the code inside it will run as soon as an object of the class is instantiated. 
+- **__destruct()**
+   - The `__destruct()` method is called automatically for each object of the class at the end.
+- **__wakeup()**
+   - It will be called as soon as a serialized object of the class is deserialized.
+- **__toString()**
+   - It will be called when an object of a class is treated as a string. Example, if `echo $obj` is performed, the `__toString()` method is called automatically.<br>
+
+You can learn more about [PHP Magic Methods here.](https://www.geeksforgeeks.org/what-are-magic-methods-and-how-to-use-them-in-php/)
