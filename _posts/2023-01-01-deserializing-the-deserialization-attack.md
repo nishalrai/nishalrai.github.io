@@ -551,6 +551,7 @@ Let's explore this on [PortSwigger Lab](https://portswigger.net/web-security/des
 - Append `~` on the file and send the request again.
 ![image](https://user-images.githubusercontent.com/47778874/227761124-775196c7-d001-464b-9707-afb54d004c5f.png)
 - We can find the source code, let's download the source code and analyze it to find the vulnerability.
+
 ```php
 <?php
 
@@ -587,8 +588,10 @@ class CustomTemplate {
 }
 ?>
 ```
+
 - In the above code, we can see that it contains a **__destruct()** method which will be triggered at the end of execution on this PHP file. The **__destruct()** method will check whether the file exists on the system and using the **unlink()** method it will delete the file if it exist. The **unlink()** method on the PHP is used to delete the file.
 - Let's create an exploit for this
+
 ```php
 <?php
 
