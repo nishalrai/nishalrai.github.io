@@ -8,7 +8,6 @@ tags: [Web Pentesting, Deserialization]
 
 I was solving one of the active box in HTB where I encountered some interesting Deserialization vulnerability. Although I managed to solve the box, I was more curious about the exploitation of deserialization vulnerability in different languages. Therefore this blog contains the walkthrough for deserialization attacks on Java, PHP, Python and Node.
 
-The walkthrough is based on the lab https://github.com/NotSoSecure/NotSoCereal-Lab
 
 Before jumping into the attacks, lets first clear the concept of serialization and deserialization.
 
