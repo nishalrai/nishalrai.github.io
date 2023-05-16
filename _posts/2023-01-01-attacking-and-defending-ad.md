@@ -6,10 +6,7 @@ categories: [Active Directory Pentesting, Windows Based]
 tags: [Active Directory, AD Pentesting, AD Defending]
 ---
 
-<div align="center">
-<h1> Attacking and Defending Active Directory</h1>
-<a href="https://twitter.com/nirajkharel7" ><img src="https://img.shields.io/twitter/follow/nirajkharel7?style=social" /> </a>
-</div>
+# Attacking and Defending Active Directory
 
 ## Domain Enumeration Part 1
 - The enumeration can be done by using Native executables and .NET classes
