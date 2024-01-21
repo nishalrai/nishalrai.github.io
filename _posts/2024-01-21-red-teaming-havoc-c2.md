@@ -9,6 +9,8 @@ tags: [Red Teaming, C2]
 # Introduction
 C2 frameworks, also known as command and control, enables red teamers to control and communicate with compromised systems. Havoc is a modern and malleable post-exploitation command and control framework, created by [@C5pider.](https://twitter.com/C5pider)
 
+<img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/HavocFramework/Havoc/main/assets/Screenshots/FullSessionGraph.jpeg">
+
 # Installation
 
 ## Clone the Havoc Repo
@@ -94,14 +96,14 @@ All files created during interaction with the Teamserver are stored within the `
 ./havoc client 
 ```
 A TeamServer prompt will be opened after running the client as below:
-<img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/favicons/havoc-1.png">
+<img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/havoc-1.png">
 
 - The Name field can be any profile name.
 - In the fields, Host and Port should contain the teamserver host address/domain and port.
 - The fields, User and Password should contain the username and password specified in your Yaotl profile. You can change the credentials by navigating inside the **profile** directory.
 
-<img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/favicons/havoc-2.png">
+<img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/havoc-2.png">
 
 After successfull connection, we can have the clean and awesome Havoc C2 framework infront of us.
 
-<img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/favicons/havoc-3.png">
+<img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/havoc-3.png">
