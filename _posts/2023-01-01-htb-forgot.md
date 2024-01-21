@@ -8,7 +8,7 @@ render_with_liquid: false
 ---
 
 # HTB — Forgot. 
-A detailed walkthrough for solving Forgot on Hack The Box. The box contains vulnerability like host header injection, cache deception, hardcoded credentials and Code injection in \`saved\_model\_cli\` in TensorFlow on preprocess\_input\_exprs\_arg\_string function.
+The detailed walkthrough for solving Forgot on Hack The Box. The box contains vulnerability like host header injection, cache deception, hardcoded credentials and Code injection in \`saved\_model\_cli\` in TensorFlow on preprocess\_input\_exprs\_arg\_string function.
 
 <img alt="" class="ad ace acf wg" loading="eager" role="presentation" src="https://miro.medium.com/v2/resize:fit:700/1*Efh63Jci5aa1iTRrOP3beQ.png" width="700" height="518">
 
