@@ -94,16 +94,16 @@ All files created during interaction with the Teamserver are stored within the `
 ./havoc client 
 ```
 A TeamServer prompt will be opened after running the client as below:
-
-![Alt text](/assets/img/favicons/havoc-1.png)
+/havoc-1.png
+![Alt text](https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/favicons/havoc-1.png)
 
 - The Name field can be any profile name.
 - In the fields, Host and Port should contain the teamserver host address/domain and port.
 - The fields, User and Password should contain the username and password specified in your Yaotl profile. You can change the credentials by navigating inside the **profile** directory.
 
-![Alt text](/assets/img/favicons/havoc-2.png)
+![Alt text](https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/favicons/havoc-2.png)
 
 
 After successfull connection, we can have the clean and awesome Havoc C2 framework infront of us.
 
-![Alt text](/assets/img/favicons/havoc-3.png)
+![Alt text](https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/favicons/havoc-3.png)
