@@ -1,5 +1,5 @@
 ---
-title: Red Teaming - Havoc C2 Introduction
+title: Red Teaming - Havoc C2
 author: nirajkharel
 date: 2024-01-20 20:55:00 +0800
 categories: [Red Teaming, C2]
