@@ -6,4 +6,7 @@ categories: [Red Teaming, C2]
 tags: [Red Teaming, C2]
 ---
 
-# Introduction
+# The Team Server
+
+
+# The C2 Profiles
