@@ -85,7 +85,7 @@ All files created during interaction with the Teamserver are stored within the `
 [INFO] Starting Teamserver on wss://0.0.0.0:40056
 [INFO] Opens existing database: data/teamserver.db
 [INFO] Starting 1 listeners from last session
-[INFO] Started "http" listener: https://172.16.18.128:443
+[INFO] Started "http" listener: https://*.*.*.*:443
 [INFO] Restored 1 agents from last session
 ```
 
