@@ -11,9 +11,6 @@ render_with_liquid: false
 HTB — Busqueda
 ================
 
-
-## HTB — Busqueda
-
 A detailed walkthrough for solving Busqueda on HTB. The box contains vulnerability like Python Code Injection, Hardcoded Credentials, Credential Reuse, and privilege escalation through SUDO shell scaping.
 
 ![](https://cdn-images-1.medium.com/max/2000/1*c2P8JEp9YuziBw2Cjrmvpg.png)
