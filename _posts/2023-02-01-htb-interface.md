@@ -416,9 +416,9 @@ I am not going to explain why this vulnerability existed on the on dompdf since 
 
 [Exploiting RCE Vulnerability in Dompdf](https://www.optiv.com/insights/source-zero/blog/exploiting-rce-vulnerability-dompdf)   
 
-[From XSS to RCE (dompdf 0day) | Positive Security](https://positive.security/blog/dompdf-rce)  
+[From XSS to RCE (dompdf 0day) \| Positive Security](https://positive.security/blog/dompdf-rce)  
 
-[Dompdf RCE | Exploit Notes](https://exploit-notes.hdks.org/exploit/web/dompdf-rce/)
+[Dompdf RCE \| Exploit Notes](https://exploit-notes.hdks.org/exploit/web/dompdf-rce/)
 
 Download the exploit [https://github.com/positive-security/dompdf-rce](https://github.com/positive-security/dompdf-rce)
 
