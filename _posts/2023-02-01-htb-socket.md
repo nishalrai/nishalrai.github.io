@@ -11,9 +11,6 @@ render_with_liquid: false
 HTB — Socket
 ================
 
-
-## HTB — Socket
-
 A detailed walkthrough for solving Socket Box on HTB. The box contains vulnerability like SQLite Injection, Weak Hashing and privilege escalation through SUDO shell scaping.
 
 ![](https://cdn-images-1.medium.com/max/2000/1*wcCJ9mN0SCHJaZ0YWTyWfA.png)
