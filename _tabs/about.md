@@ -4,13 +4,13 @@ icon: fas fa-info-circle
 order: 4
 ---
 
-# NIRAJ KHAREL
+# NIRAJ KHAREL | CRTO | CRTP
 **thenirajkharel@gmail.com**<br>
 **Kathmandu, Nepal**
 
 ### PROFESSIONAL SUMMARY
 
-Experienced penetration tester with over 3 years of work exposure in Offensive side of Cyber Security. Has performed Security Assessment on more than 25 different organizations including Financial Institutions, Government Bodies, Payment Gateway and INGOs.
+Experienced penetration tester with almost 4 years of work exposure in Offensive side of Cyber Security. Has performed Security Assessment on more than 50 different national and international organizations including Financial Institutions, Government Bodies, Private Limiteds,Payment Gateways and INGOs.
 
 ### SKILLS
 - Web, Network and Mobile Application VA and Exploitation.
@@ -28,6 +28,16 @@ Experienced penetration tester with over 3 years of work exposure in Offensive s
 - Point of Contact
 
 ### WORK HISTORY
+
+**Offensive Security Consultant | StickmanCyber Pty. Ltd. - Sydney (Remote)** `06/2023 - Current`   
+- Carry out mobile application penetration testing (iOS/Android).
+- Carry out web application penetration testing.
+- Carry out external and internal network penetration testing.
+- Network segmentation testing.
+- Perform Red Team Engagements.
+- Vulnerability discussion and mitigation strategies with clients.
+- Assist and guide team members.
+- Technical review of the report.
 
 **Offensive Security Team Lead, Cryptogen Nepal Pvt. Ltd – Kathmandu, Bagmati** `03/2022 – Current`
 
@@ -70,7 +80,8 @@ Higher Secondary: Science
 School Leaving Certificate (SLC)
 
 ### CERTIFICATIONS
-
+Certified Red Team Operator (CRTO)<br>
+Certified Red Team Professional (CRTP)<br>
 Certified Ethical Hacker (Practical)<br>
 Tenable.io Certificate of Proficiency<br>
 Autopsy Forensic Basics<br>
