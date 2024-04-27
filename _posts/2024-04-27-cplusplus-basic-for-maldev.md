@@ -1,5 +1,5 @@
 ---
-title: C++ Basic For Malware Development
+title: C++ Basics For Malware Development
 author: nirajkharel
 date: 2024-04-27 14:10:00 +0800
 categories: [Red Teaming]
@@ -8,5 +8,5 @@ render_with_liquid: false
 ---
 
 
-C++ Basic For Malware Development
+C++ Basics For Malware Development
 ================
