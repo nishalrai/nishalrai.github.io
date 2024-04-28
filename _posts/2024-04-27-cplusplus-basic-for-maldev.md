@@ -10,4 +10,4 @@ render_with_liquid: false
 
 Supposed to be Intro
 ================
-The code snippet below and its explanations cover various useful Windows functions and APIs that can be implemented using the C++ language for system programming purposes (aka Malware Development 😉). Here, we'll discuss the basic terms associated with these functions. If you're new to C++, don't worry—we'll walk through it together, as I'm also new to it.
+The code snippet below and its explanations cover various useful Windows functions and APIs that can be implemented using the C++ language for system programming purposes (aka Malware Development 😉). Here, we'll discuss the basic terms associated with these functions. If you're new to C++, don't worry, we'll walk through it together, as I'm also new to it (no, please learn some syntax first).
