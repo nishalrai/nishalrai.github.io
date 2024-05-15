@@ -15,7 +15,7 @@ The code snippet below and its explanations cover various useful Windows functio
   
 
 Since we are dealing with the Windows API, we need to use **Windows.h** as a header file which contains declarations for all of the functions in the Windows API. Also **iostream** is used for data input and output.  
-Basic Syntax Skeleton for this blog
+Basic Syntax Format for this blog:
 ```c++
 #include<Windows.h> // Import Windows API Functions
 #include<iostream> // Input and Output
@@ -35,7 +35,7 @@ The **CreateDirectory** function creates a new directory on the specified path. 
 - **lpPathName:** Contains value for the path of the directory which needs to be created. Its data type is [**LPCTSTR**](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/f8d4fe46-6be8-44c9-8823-615a21d17a61) which means Long Pointer to Constant TCHAR String. It is commonly used in Windows API functions to pass string parameters.
 - **lpSecurityAttributes:** Used to define the security attributes for the folder being created like defining who can access it and what operations they can perform. More info about it on [MSDN](https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa379560(v=vs.85)). 
 
-Syntax
+**Syntax for CreateDirectory**
 ```c++
 BOOL CreateDirectory(
   [in]           LPCTSTR               lpPathName,
