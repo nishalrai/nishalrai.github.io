@@ -51,26 +51,32 @@ using namespace std;
 int main()
 {
 
-// Define a Global variable, b for bCreateDir is the indication that the variable is BOOL.
-BOOL bCreateDir;
+	// Define a Global variable, b for bCreateDir is the indication that the variable is BOOL.
+	BOOL bCreateDir;
 
-// Create a Function and pass the directory path
-bcreateDir = CreateDirectory(
-L"C:\\Users\\niraj\\Desktop\\Dir1", // L indicates for Long
-NULL);
+	// Create a Function and pass the directory path
+	bCreateDir = CreateDirectory(
+		L"C:\\Users\\theni\\Desktop\\Dir1", // L indicates for Long
+		NULL);
 
-// If the function fails, the return value will be zero i.e. FALSE. To get the information about the error, we can use GETLASTError function.
-if (bcreateDir == FALSE)
-{
-cout << "CreateDirectory Function Failed. Error No:  " << GetLastError() << endl;
-}
+	// If the function fails, the return value will be zero i.e. FALSE. 
+	// To get the information about the error, we can use GetLastError function.
+	if (bCreateDir == FALSE)
+	{
+		cout << "CreateDirectory Function Failed. Error No:  " << GetLastError() << endl;
+	}
 
-cout << "CreateDirectory Function Succeed" << endl;
-getchar();
-system("PAUSE");
-return 0;
+	cout << "CreateDirectory Function Succeed" << endl;
+	getchar();
+	system("PAUSE");
+	return 0;
 }
 ```
+**Run the above Code**
+- Click on 'Build -> Build Solution' to compile the code.
+- Click on 'Debug -> Start Debugging' to run the program.
+
+<img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="../assets/img/images/CPlusPlus1.png">
 
 TBC....
 ## Delete a Directory
