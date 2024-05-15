@@ -76,7 +76,7 @@ int main()
 - Click on 'Build -> Build Solution' to compile the code.
 - Click on 'Debug -> Start Debugging' to run the program.
 
-<img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="../assets/img/images/CPlusPlus1.png">
+<img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/CPlusPlus1.png">
 
 TBC....
 ## Delete a Directory
