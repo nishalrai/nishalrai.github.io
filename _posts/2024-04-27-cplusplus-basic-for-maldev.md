@@ -17,13 +17,14 @@ The code snippet below and its explanations cover various useful Windows functio
 Since we are dealing with the Windows API, we need to use **Windows.h** as a header file which contains declarations for all of the functions in the Windows API. Also **iostream** is used for data input and output.  
 Basic Syntax Skeleton for this blog
 ```c++
-#include<Windows.h> # Import Windows API Functions
-#include<iostream> # Input and Output
-using namespace std; # Allows a program to use names for objections and variables from the standard library like  cout and endl
+#include<Windows.h> // Import Windows API Functions
+#include<iostream> // Input and Output
+using namespace std; // Allows a program to use names for objections and variables from the standard library like  cout and endl
 
-int main() # Main Function.
+int main() // Entry point of the program.
 {
-    system("PAUSE"); # Wait for the user to exit the program.
+    // YOUR CODE HERE
+    system("PAUSE"); // Wait for the user to exit the program.
     return 0;
 }
 ```
@@ -49,23 +50,29 @@ Here on the above syntax, **[in]** means that it is an input parameter and  **[i
 using namespace std;
 int main()
 {
+
+// Define a Global variable, b for bCreateDir is the indication that the variable is BOOL.
 BOOL bCreateDir;
-createDir = CreateDirectory(
-L"C:\\Users\\niraj\\Desktop\\Dir1",
+
+// Create a Function and pass the directory path
+bcreateDir = CreateDirectory(
+L"C:\\Users\\niraj\\Desktop\\Dir1", // L indicates for Long
 NULL);
 
-if (createDir == FALSE)
+// If the function fails, the return value will be zero i.e. FALSE. To get the information about the error, we can use GETLASTError function.
+if (bcreateDir == FALSE)
 {
-cout << "CreateDirectory Failed & Error No - " << GetLastError() << endl;
+cout << "CreateDirectory Function Failed. Error No:  " << GetLastError() << endl;
 }
 
-cout << "CreateDirectory Success" << endl;
+cout << "CreateDirectory Function Succeed" << endl;
 getchar();
 system("PAUSE");
 return 0;
 }
 ```
 
+TBC....
 ## Delete a Directory
 ```c++
 #include<Windows.h>
@@ -75,13 +82,12 @@ int main()
 {
 BOOL bRemoveDir;
 
-/* Delete Directory */
 bRemoveDir = RemoveDirectory(L"C:\\Users\\niraj\\Desktop\\Dir1");
 if (bRemoveDir == FALSE)
 {
-cout << "RemoveDirectory Failed & Error No - " << GetLastError() << endl;
+cout << "RemoveDirectory Function Failed. Error No: " << GetLastError() << endl;
 }
-cout << "RemoveDirectory Success" << endl;
+cout << "RemoveDirectory Function Succeed" << endl;
 system("PAUSE");
 return 0;
 }
