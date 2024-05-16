@@ -51,7 +51,7 @@ using namespace std;
 int main()
 {
 
-	// Define a Global variable, b for bCreateDir is the indication that the variable is BOOL.
+	// Define a Global variable, b in bCreateDir is the indication that the variable is BOOL.
 	BOOL bCreateDir;
 
 	// Create a Function and pass the directory path
@@ -78,17 +78,32 @@ int main()
 
 <img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/cplusplus1.gif">
 
-TBC....
+
 ## Delete a Directory
+Windows API contains a function **RemoveDirectory** to delete the directory from the specified path. It consists of a single parameter **lpPathName** which specifies the path of the directory to be removed. It works like the rmdir command on Linux, and the directory should be empty when invoking this API.
+
+**Syntax**
+```c++
+BOOL RemoveDirectoryA(
+  [in] LPCSTR lpPathName
+);
+```
+
 ```c++
 #include<Windows.h>
 #include<iostream>
 using namespace std;
 int main()
 {
+
+// Define a Global variable, b in bRemoveDir is the indication that the variable is BOOL.
 BOOL bRemoveDir;
 
-bRemoveDir = RemoveDirectory(L"C:\\Users\\niraj\\Desktop\\Dir1");
+// Call RemoveDirectory funtion and specify the direcoty to be removed
+bRemoveDir = RemoveDirectory(L"C:\\Users\\theni\\Desktop\\NewFolder1");
+
+// If the function fails, the return value will be zero i.e. FALSE. 
+// To get the information about the error, we can use GetLastError function.
 if (bRemoveDir == FALSE)
 {
 cout << "RemoveDirectory Function Failed. Error No: " << GetLastError() << endl;
@@ -97,6 +112,6 @@ cout << "RemoveDirectory Function Succeed" << endl;
 system("PAUSE");
 return 0;
 }
-
-
 ```
+
+<img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/cplusplus2.gif">
