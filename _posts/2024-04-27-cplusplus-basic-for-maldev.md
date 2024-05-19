@@ -80,7 +80,7 @@ int main()
 
 
 ## Delete a Directory
-Windows API contains a function **RemoveDirectory** to delete the directory from the specified path. It consists of a single parameter **lpPathName** which specifies the path of the directory to be removed. It works like the rmdir command on Linux, and the directory should be empty when invoking this API.
+Windows API contains a function [**RemoveDirectory**](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-removedirectorya) to delete the directory from the specified path. It consists of a single parameter **lpPathName** which specifies the path of the directory to be removed. It works like the rmdir command on Linux, and the directory should be empty when invoking this API.
 
 **Syntax**
 ```c++
@@ -115,3 +115,68 @@ return 0;
 ```
 
 <img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/cplusplus2.gif">
+
+## Create File
+Windows contains [**CreateFile**](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea) function which creates or opens a file. The return type of the function is a **handle**, which is a unique identifier used by Windows programs to manage and interact with resources, such as files, devices, windows, or memory blocks. When a program requests access to a resource, the operating system assigns a handle to it. For this function, we are using a file handle.
+
+The **CreateFile** function contains seven different arguments with one optional.
+- lpFileName: Similar to the functions above, this specifies the name or path of the file or device to be created or opened.
+- dwDesiredAccess: The mode in which you want to open the file, mostly **GENERIC_READ** and **GENERIC_WRITE**. It includes two additional modes: **GENERIC_ALL**, which allows all possible access rights, and **GENERIC_EXECUTE**, which allows the file to be executed.
+- dwShareMode: The mode in which you want to share the file, mostly **FILE_SHARE_READ**. It includes three additional modes: 0, which prevents other processes from opening the file; **FILE_SHARE_DELETE**, which enables the operation to delete the file; and **FILE_SHARE_WRITE**, which enables write access to the file. Note that the modes specified in **dwShareMode** should align with the modes in **dwDesiredAccess**, meaning you cannot grant a permission that conflicts with the access mode specified in an existing request with an open handle. In such cases, it will return an **ERROR_SHARING_VIOLATION** error.
+- lpSecurityAttributes: Optional parameter, can be left as NULL to assign it the default value.
+- dwCreationDisposition: This parameter specifies an action to take on a file if it already exists. Actions include **CREATE_ALWAYS**, which overwrites an existing file; **CREATE_NEW**, which creates a new file only if it does not exist; **OPEN_ALWAYS**, which opens a file if it exists and creates a new file if it does not; **OPEN_EXISTING**, which only opens a file if it exists; and **TRUNCATE_EXISTING**, which truncates the file to zero if it exists.
+- dwFlagsAndAttributes: Defines the attributes for the file, whether the file should be archived, encrypted, hidden, offline, read-only, used only by the system, or available temporarily. We can use **FILE_ATTRIBUTE_NORMAL** to not set any attributes on it.
+- hTemplateFile: Optional parameter that contains a handle to a template file. Can be set to NULL.
+
+The return value for the function is an open handle to the specified file when the function succeeds and **INVALID_HANDLE_VALUE** when the function fails.
+
+**Syntax**
+```c++
+HANDLE CreateFileA(
+  [in]           LPCSTR                lpFileName,
+  [in]           DWORD                 dwDesiredAccess,
+  [in]           DWORD                 dwShareMode,
+  [in, optional] LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+  [in]           DWORD                 dwCreationDisposition,
+  [in]           DWORD                 dwFlagsAndAttributes,
+  [in, optional] HANDLE                hTemplateFile
+);
+```
+
+```c++
+#include<Windows.h>
+#include<iostream>
+using namespace std;
+int main()
+{
+	// Define a handle, h on hFile is known as handle.
+	HANDLE hFile;
+
+	// Create a function
+	hFile = CreateFile(
+		L"C:\\Users\\theni\\Desktop\\Dir1\\CreateFile.txt", // Creates a file
+		GENERIC_READ | GENERIC_WRITE, // Opens the file in read and write mode.
+		FILE_SHARE_READ, // Enable other process to open the file in read mode.
+		NULL,
+		CREATE_NEW, // Creates a new file only when it does not exists.
+		FILE_ATTRIBUTE_NORMAL, // Does not sets any attributes
+		NULL);
+
+	// Returns a error message if INVALID_HANDLE_VALUE
+	if (hFile == INVALID_HANDLE_VALUE)
+	{
+		cout << "CreateFile Failed & Error No =" << GetLastError() << endl;
+	}
+	else {
+		// Otherwise the operation is success
+		cout << "CreateFile Success" << endl;
+	}
+	
+	// close the handle
+	CloseHandle(hFile);
+
+	system("PAUSE");
+	return 0;
+}
+```
+<img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/cplusplus3.gif">
