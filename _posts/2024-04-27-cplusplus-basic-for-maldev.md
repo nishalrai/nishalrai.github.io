@@ -180,3 +180,120 @@ int main()
 }
 ```
 <img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/cplusplus3.gif">
+
+## Copying File
+The [**CopyFile**](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-copyfile) function generally copies an existing file and its contents into a new file. It consists of three parameters and the return type is **BOOL**. The first parameter is **lpExistingFileName**, which holds the name of an existing file. The second one is **lpNewFileName**, which holds the name of the new file. The last one is **bFailIfExists**, which is a **BOOL** type that determines the action based on its value. If the value is **TRUE** and **lpNewFileName** specifies a file name that already exists, the function fails. If the value is FALSE and **lpNewFileName** specifies a file name that already exists, the new file overwrites the existing file.
+
+Regarding the return type, if the function fails, it returns zero. It returns a nonzero value for successful execution.
+
+**Syntax**
+```c++
+BOOL CopyFile(
+  [in] LPCTSTR lpExistingFileName,
+  [in] LPCTSTR lpNewFileName,
+  [in] BOOL    bFailIfExists
+);
+```
+
+```c++
+#include<Windows.h>
+#include<iostream>
+using namespace std;
+
+int main()
+{
+	// Define a global variable. 
+	BOOL bFile;
+
+	// Execute the function and assign the return type to a variable
+	bFile = CopyFile(
+		L"C:\\Users\\theni\\Desktop\\File1.txt",
+		L"C:\\Users\\theni\\Desktop\\File2.txt",
+		TRUE);
+
+// if the return value is zero/false, the function fails.
+if (bFile == FALSE)
+{
+	cout << "CopyFile Failed & Error No - " << GetLastError() << endl;
+}
+
+// otherwise it succeeds
+else {
+	cout << "CopyFile Success" << endl;
+}
+system("PAUSE");
+return 0;
+}
+```
+
+<img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/cplusplus4.gif">
+
+
+## Reading the File
+
+TODO
+
+```c++
+#include <Windows.h>
+#include <iostream>
+
+using namespace std;
+
+int main() {
+    HANDLE hFile;
+    BOOL bRFile;
+    char* chBuffer = nullptr;
+    DWORD dwFileSize;
+    DWORD dwNoByteRead;
+
+    // Open file for reading
+    hFile = CreateFile(
+        L"C:\\Users\\theni\\Desktop\\File1.txt",
+        GENERIC_READ,
+        FILE_SHARE_READ,
+        NULL,
+        OPEN_EXISTING,
+        FILE_ATTRIBUTE_NORMAL,
+        NULL
+    );
+
+    if (hFile == INVALID_HANDLE_VALUE) {
+        cout << "Unable to Open the File, Error: " << GetLastError() << endl;
+        return 1;
+    }
+
+    // Get the file size
+    dwFileSize = GetFileSize(hFile, NULL);
+    
+
+    // Allocate memory for the buffer
+    chBuffer = new char[dwFileSize + 1]; // Add 1 for null terminator
+
+    // Read file content into the buffer
+    bRFile = ReadFile(
+        hFile,
+        chBuffer,
+        dwFileSize,
+        &dwNoByteRead,
+        NULL
+    );
+
+    if (bRFile == FALSE) {
+        cout << "ReadFile failed with error: " << GetLastError() << endl;
+    }
+    else {
+        // Null-terminate the buffer
+        chBuffer[dwNoByteRead] = '\0';
+        cout << "ReadFile succeeded, and the data is: " << chBuffer << endl;
+    }
+
+    // Cleanup
+    delete[] chBuffer;
+    CloseHandle(hFile);
+
+    system("PAUSE");
+    return 0;
+}
+```
+
+<img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/cplusplus5.gif">
