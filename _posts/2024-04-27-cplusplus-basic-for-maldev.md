@@ -1,5 +1,5 @@
 ---
-title: C++ Basics For Malware Development
+title: Offensive C++
 author: nirajkharel
 date: 2024-04-27 14:10:00 +0800
 categories: [Red Teaming, Malware Development]
@@ -11,7 +11,7 @@ render_with_liquid: false
 Supposed to be Intro
 ================
 
-The code snippet below and its explanations cover various useful Windows functions and APIs that can be implemented using the C++ language for system programming purposes (aka not a Malware Development 😉). Here, we'll discuss the basic terms associated with these functions. If you're new to C++, don't worry, we'll walk through it together, as I'm also new to it (no, please learn some syntax first).
+The code snippet below and its explanations cover various useful Windows functions and APIs that can be implemented using the C++ language for system programming purposes. Here, we'll discuss the basic terms associated with these functions. If you're new to C++, don't worry, we'll walk through it together, as I'm also new to it (no, please learn some syntax first).
   
 
 Since we are dealing with the Windows API, we need to use **Windows.h** as a header file which contains declarations for all of the functions in the Windows API. Also **iostream** is used for data input and output.  
