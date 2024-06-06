@@ -8,14 +8,40 @@ render_with_liquid: false
 ---
 
 # Process Enumeration
-Process Enumerating is a technique to enumerate running process on the Window Systems. This can be achive by using **ToolHelp32** API which contains the below functions and structures:
-- CreateToolhelp32Snapshot (Function): Takes the snapshot of the specified processes, threads and modules.
-- PROCESSENTRY32 (Structure): It defines an entry from the list of processes on the snapshot. In order to use below functions, the size of the structure needs to be calculated.
-- Process32First (Function): This can be used to extract the information about the first process recorded on the snapshot.
-- Process32Next (Function): This can be used to extract information about the next process recorded on the snapshot.
+Process Enumerating is a technique to enumerate running process on the Window Systems. This can be achive by using **ToolHelp32** API which contains the below functions:
 
-**CreateToolhelp32Snapshot**
+## CreateToolhelp32Snapshot**
 - This function contains two arguments which are **dwFlags** and **th32ProcessID**. There are different values for **dwFlags** argument depending upon type of information you would like to save it on the snapshot. Since on this blog, we are only focused on process, inorder to include all processes in the system in the snapshot, we will use **TH32CS_SNAPPROCESS**. Next parameter **th32ProcessID** is the process identifier of the process which needs to be included in the snapshot. We can use the value as **0** to indicate the current process for that.
+
+**SYNTAX**
+```c++
+HANDLE CreateToolhelp32Snapshot(
+  [in] DWORD dwFlags,
+  [in] DWORD th32ProcessID
+);
+```
+
+## Process32First
+This can be used to extract the information about the first process recorded on the snapshot. It has two arguments, one is **hSnapshot** which is the handle returned by **CreateToolhelp32Snapshot** and **lppe** which is the pointer to **PROCESSENTRY32** structure. This structure contains information about a single process within the snapshot in the system's address space. Information such as process identifier, parent process's identifier, executable file, threads and much more.
+
+**SYNTAX**
+```c++
+BOOL Process32First(
+  [in]      HANDLE           hSnapshot,
+  [in, out] LPPROCESSENTRY32 lppe
+);
+```
+
+## Process32Next
+This can be used to extract information about the next process recorded on the snapshot. The arguments are same as above.
+**SYNTAX**
+```c++
+BOOL Process32Next(
+  [in]  HANDLE           hSnapshot,
+  [out] LPPROCESSENTRY32 lppe
+);
+```
+
 
 ```c++
 #include <Windows.h>
