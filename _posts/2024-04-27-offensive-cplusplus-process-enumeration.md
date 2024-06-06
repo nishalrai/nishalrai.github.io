@@ -7,24 +7,26 @@ tags: [Red Teaming, Malware Development]
 render_with_liquid: false
 ---
 
+# Process Enumeration
+Process Enumerating is a technique to enumerate running process on the Window Systems. This can be achive by using **ToolHelp32** API which contains the below functions and structures:
+- CreateToolhelp32Snapshot (Function): Takes the snapshot of the specified processes, threads and modules.
+- PROCESSENTRY32 (Structure): It defines an entry from the list of processes on the snapshot. In order to use below functions, the size of the structure needs to be calculated.
+- Process32First (Function): This can be used to extract the information about the first process recorded on the snapshot.
+- Process32Next (Function): This can be used to extract information about the next process recorded on the snapshot.
+
+**CreateToolhelp32Snapshot**
+- This function contains two arguments which are **dwFlags** and **th32ProcessID**. There are different values for **dwFlags** argument depending upon type of information you would like to save it on the snapshot. Since on this blog, we are only focused on process, inorder to include all processes in the system in the snapshot, we will use **TH32CS_SNAPPROCESS**. Next parameter **th32ProcessID** is the process identifier of the process which needs to be included in the snapshot. We can use the value as **0** to indicate the current process for that.
+
 ```c++
 #include <Windows.h>
 #include <iostream>
 #include <string>
 #include <tlhelp32.h>
 
-// Functions used
-    // CreateToolhelp32Snapshot
-    // PROCESSENTRY32
-        // Process32First
-        // Process32Next
-
 using namespace std;
 
 int main() {
     
-    cout << endl << "Running Processes" << endl;
-
     // Create Snapshot of currently running processes (SYNTAX)
     HANDLE CreateToolhelp32Snapshot(
         DWORD dwFlags,
@@ -64,5 +66,6 @@ int main() {
     CloseHandle(hSnapShot);
     return 0;
 }
-
 ```
+
+<img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/process-enum-1.gif">
