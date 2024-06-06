@@ -52,12 +52,6 @@ BOOL Process32Next(
 using namespace std;
 
 int main() {
-    
-    // Create Snapshot of currently running processes (SYNTAX)
-    HANDLE CreateToolhelp32Snapshot(
-        DWORD dwFlags,
-        DWORD th32ProcessID
-    );
 
     // TH32CS_SNAPPROCESS for the dwFlags and 0 for th32ProcessID.
     HANDLE hSnapShot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
