@@ -8,10 +8,10 @@ render_with_liquid: false
 ---
 
 # Process Enumeration
-Process Enumerating is a technique to enumerate running process on the Window Systems. This can be achive by using **ToolHelp32** API which contains the below functions:
+Process enumerating is a technique to enumerate running processes on Windows systems. This can be achieved by using the **ToolHelp32** API, which contains the following functions:
 
-## CreateToolhelp32Snapshot
-- This function contains two arguments which are **dwFlags** and **th32ProcessID**. There are different values for **dwFlags** argument depending upon type of information you would like to save it on the snapshot. Since on this blog, we are only focused on process, inorder to include all processes in the system in the snapshot, we will use **TH32CS_SNAPPROCESS**. Next parameter **th32ProcessID** is the process identifier of the process which needs to be included in the snapshot. We can use the value as **0** to indicate the current process for that.
+## [CreateToolhelp32Snapshot](https://learn.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-createtoolhelp32snapshot)
+This function contains two arguments: **dwFlags** and **th32ProcessID**. There are different values for the dwFlags argument depending on the type of information you would like to save in the snapshot. Since in this blog we are only focused on processes, to include all processes in the system in the snapshot, we will use **TH32CS_SNAPPROCESS**. The next parameter, **th32ProcessID**, is the process identifier of the process that needs to be included in the snapshot. We can use the value 0 to indicate the current process.
 
 **SYNTAX**
 ```c++
@@ -21,8 +21,8 @@ HANDLE CreateToolhelp32Snapshot(
 );
 ```
 
-## Process32First
-This can be used to extract the information about the first process recorded on the snapshot. It has two arguments, one is **hSnapshot** which is the handle returned by **CreateToolhelp32Snapshot** and **lppe** which is the pointer to **PROCESSENTRY32** structure. This structure contains information about a single process within the snapshot in the system's address space. Information such as process identifier, parent process's identifier, executable file, threads and much more.
+## [Process32First](https://learn.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-process32first)
+This can be used to extract information about the first process recorded in the snapshot. It has two arguments: **hSnapshot**, which is the handle returned by **CreateToolhelp32Snapshot**, and lppe, which is the pointer to a **PROCESSENTRY32** structure. This structure contains information about a single process within the snapshot in the system's address space, including the process identifier, parent process identifier, executable file, threads, and much more.
 
 **SYNTAX**
 ```c++
@@ -32,7 +32,7 @@ BOOL Process32First(
 );
 ```
 
-## Process32Next
+## [Process32Next](https://learn.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-process32next)
 This can be used to extract information about the next process recorded on the snapshot. The arguments are same as above.
 **SYNTAX**
 ```c++
@@ -43,7 +43,7 @@ BOOL Process32Next(
 ```
 
 We will break down codes into different chunk to understand it on better way.
-First approach would be to define the necessary headers on the code. Header **tlhelp32.h** is used to initialize those functions neededed.
+The first approach is to define the necessary headers in the code. The header **tlhelp32.h** is used to initialize the needed functions.
 ```c++
 #include <Windows.h>
 #include <iostream>
@@ -65,7 +65,7 @@ int main() {
         cout << "Process Snapshot creation failed" << endl;
     }
 ```
-Now that we have process information stored in the snapshot, we can retrieve information about the first process encountered in a system snapshot using Process32First, and the next process using Process32Next. We also need to initialize the structure **PROCESSENTRY32** which contains information about a process, such as its ID, parent process ID, number of threads and the executable file name. **dwSize** is set to the size of the **PROCESSENTRY32** structure. This is necessary before using the structure in functions like **Process32First** and **Process32Next**.
+Now that we have process information stored in the snapshot, we can retrieve information about the first process encountered in a system snapshot using **Process32First**, and the next process using **Process32Next**. We also need to initialize the structure **PROCESSENTRY32** which contains information about a process, such as its ID, parent process ID, number of threads and the executable file name. **dwSize** is set to the size of the **PROCESSENTRY32** structure. This is necessary before using the structure in functions like **Process32First** and **Process32Next**.
 
 
 ```c++
