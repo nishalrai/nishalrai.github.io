@@ -70,7 +70,7 @@ As per the documentation, while using **WTS_PROCESS_INFO_EX**, we need to free t
 }
 ```
 
-The method **WTSEnumerateProcessesEx** also contains a capability to retrieve the information about current user running the process. This can be useful while enumerating the privileges for the enumerated processes. For this, we need to use **[ConvertSidToStringSidA](https://learn.microsoft.com/en-us/windows/win32/api/sddl/nf-sddl-convertsidtostringsida)** inroder to convert SID into string format to supply in into **printf** function.
+The method **WTSEnumerateProcessesEx** also contains a capability to retrieve the information about current user running the process. This can be useful while enumerating the privileges for the enumerated processes. For this, we need to use **[ConvertSidToStringSidA](https://learn.microsoft.com/en-us/windows/win32/api/sddl/nf-sddl-convertsidtostringsida)** inorder to convert SID into string format to supply it into **printf** function.
 
 **SYNTAX**
 ```c++
@@ -113,3 +113,5 @@ Before building the project, you will also require to include the dependency **W
 
 <br>
 <img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/process-enum-2.gif">
+
+Run the code using elevated privileges to enumerate the maximum SIDs.
