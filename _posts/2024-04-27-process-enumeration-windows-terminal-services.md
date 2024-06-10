@@ -1,7 +1,7 @@
 ---
 title: Offensive C++ - Process Enumeration (Windows Terminal Services API)
 author: nirajkharel
-date: 2024-04-27 14:10:00 +0800
+date: 2024-06-09 14:10:00 +0800
 categories: [Red Teaming, Malware Development]
 tags: [Red Teaming, Malware Development]
 render_with_liquid: false
