@@ -1,7 +1,7 @@
 ---
 title: Offensive C++ Basics
 author: nirajkharel
-date: 2024-04-27 14:10:00 +0800
+date: 2024-05-15 14:10:00 +0800
 categories: [Red Teaming, Malware Development]
 tags: [Red Teaming, Malware Development]
 render_with_liquid: false
