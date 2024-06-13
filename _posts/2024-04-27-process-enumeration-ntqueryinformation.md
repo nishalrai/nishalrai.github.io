@@ -106,8 +106,8 @@ After defining all the required parameters and allocating the virtual memory, ca
     nisStat = NtQuerySystemInformation(SystemProcessInformation, sysProc, sysInfoLen, nullptr);
 
     // Just some fancy printing format.
-    wprintf(L"%-10ls %-14ls %-30ls\n", L"ProcessID", L"Thread Count", L"Process Name");
-    wprintf(L"%-10ls %-14ls %-30ls\n", L"----------", L"----------",L"------------------------------");
+    wprintf(L"%-10ls %-10ls %-14ls %-10ls %-30ls\n", L"ProcessID", L"ParentPID", L"Thread Count", L"Session", L"Process Name");
+wprintf(L"%-10ls %-10ls %-14ls %-10ls %-30ls\n", L"----------", L"----------", L"----------", L"----------", L"------------------------------");
 
 ```
 
@@ -117,12 +117,13 @@ Since we have converted **sysProc** into **ULONG_PTR**, in order to move to the 
 
 ```c++
     do {
-        wprintf(L"%-10lu %-14lu %-30ls\n",
-            
-            reinterpret_cast<ULONG_PTR>(sysProc->UniqueProcessId),
-            sysProc->NumberOfThreads,
-            sysProc->ImageName.Buffer ? sysProc->ImageName.Buffer : L"(null)"
-        );
+         wprintf(L"%-10lu %-10lu %-14lu %-10lu %-30ls\n",
+         reinterpret_cast<ULONG_PTR>(sysProc->UniqueProcessId),
+         sysProc->InheritedFromUniqueProcessId,
+         sysProc->NumberOfThreads,
+         sysProc->SessionId,
+         sysProc->ImageName.Buffer ? sysProc->ImageName.Buffer : L"(null)"
+ );
 
         // When NextEntryOffset is 0, then there is no process left to enumerate.
         if (sysProc->NextEntryOffset == 0) {
