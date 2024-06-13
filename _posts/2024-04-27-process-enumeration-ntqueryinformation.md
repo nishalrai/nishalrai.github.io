@@ -1,7 +1,7 @@
 ---
 title: Offensive C++ - Process Enumeration (The Native NtQuerySytemInformation)
 author: nirajkharel
-date: 2024-06-10 14:10:00 +0800
+date: 2024-06-12 14:10:00 +0800
 categories: [Red Teaming, Malware Development]
 tags: [Red Teaming, Malware Development]
 render_with_liquid: false
@@ -37,20 +37,45 @@ __kernel_entry NTSTATUS NtQuerySystemInformation(
 );
 ```
 
-Explanation: TODO
+Let's break down the flags needed for `NtQuerySystemInformation`:
+- `SYSTEM_INFORMATION_CLASS SystemInformationClass`: It specifies the type of information needed from the system, such as `SystemBasicInformation`, `SystemPolicyInformation`, or `SystemProcessInformation`. Here, we will use `SystemProcessInformation`, which returns an array of process information, one for each running process.
+- `PVOID SystemInformation`: This is a void pointer. It points to the buffer that receives the requested information from the `SystemInformationClass` flag.
+- `ULONG SystemInformationLength`: An unsigned long integer datatype that holds the size of the buffer pointed to by `SystemInformation`.
+- `PULONG ReturnLength`: This is an optional parameter that contains a pointer to the location where the acquired information length is written. It can be declared as `nullptr`.
+
+
+**Important:** Before compiling the Native API functions into our code, we need to integrate the Native API definitions, which are not built-in within C++ or Visual Studio. We can get them through the GitHub repository maintained by the developers of **[Process Hacker 2](https://github.com/winsiderss/systeminformer)**. You need to download and place all the header files within your project directory.
+
+Or, if you want to use Native APIs for multiple projects, you can do it via **[Vcpkg](https://github.com/microsoft/vcpkg/releases)**, which is an open-source C/C++ dependency manager.
+
+```powershell
+Vcpkg.exe integrate install
+Vcpkg.exe install phnt:x64-windows 
+
+// Or depending upon your architecture
+Vcpkg.exe install phnt:arm64-windows
+```
+
+Since we have our requirements installed, let's break down the code that we can use to enumerate process information using Native APIs.
+
+The first approach is to define the necessary headers in the code. The headers **phnt_windows.h** and **phnt.h** are used to initialize the needed NT API functions.
 
 ```c++
-
 #include <iostream>
 #include <Windows.h>
 #include <phnt_windows.h>
 #include <phnt.h>
 #include <stdio.h>
+```
 
-
-// Instruct the linker to link with 'ntdll' library, otherwise NtQuerySystemInformation not be compiled.
+Instruct the linker to link with 'ntdll' library, otherwise NtQuerySystemInformation will not be compiled.
+```c++
 #pragma comment(lib, "ntdll")
+```
 
+Within the main function, first set up the **NTSTATUS** code, a data type defined in the Windows SDK to indicate the success or failure of function calls. Declare a pointer to **SYSTEM_PROCESS_INFORMATION** named **sysProc** and initialize it to `nullptr` since the size of the system information is not yet known. Define a `ULONG` variable for **SystemInformationLength**, representing the size of the buffer used to store system process information. Allocate memory for this buffer using **VirtualAlloc** with read/write permissions. Finally, cast the allocated memory to a **SYSTEM_PROCESS_INFORMATION** pointer and assign it to the **sysProc** pointer.
+
+```c++
 int main()
 {
     // Setup the NTSTATUS code 
@@ -60,7 +85,7 @@ int main()
     // and initializes it to nullptr as until now we do not know the size of the system information.
     SYSTEM_PROCESS_INFORMATION* sysProc = nullptr;
 
-    // Defining the ULONG variable for SystemInformationLength. Size of the buffer used to store system process information.
+    // Defining the ULONG variable for SystemInformationLength. Size of the buffer used to store system process information. This size is an example and can need adjustment based on the buffer size.
     unsigned long sysInfoLen = 1024 * 1024;
 
     // Creates and allocate the memory defined above with read/write permission.
@@ -68,7 +93,11 @@ int main()
 
     // Cast the allocated memory to SYSTEM_PROCESS_INFORMATION pointer and assigns it to 'sysProc'
     sysProc = reinterpret_cast<SYSTEM_PROCESS_INFORMATION*>(nisBuf);
+```
 
+After defining all the required parameters and allocating the virtual memory, call the **NtQuerySystemInformation** function with the above-defined flags.
+
+```c++
     // Call NtQuerySystemInformation function with the type of information needed
     // SystemProcessInformation - Enumerate process
     // sysProc - buffer to receive the information
@@ -80,7 +109,13 @@ int main()
     wprintf(L"%-10ls %-14ls %-30ls\n", L"ProcessID", L"Thread Count", L"Process Name");
     wprintf(L"%-10ls %-14ls %-30ls\n", L"----------", L"----------",L"------------------------------");
 
-    // Iterate over each SYSTEM_PROCESS_INFORMATION entry in the buffer and prints its information.
+```
+
+Iterate over each **SYSTEM_PROCESS_INFORMATION** entry in the buffer and print its information. During iteration, when the entry in the array is exhausted, break the loop since there are no processes left to enumerate. As long as the loop continues, cast the original type of **UniqueProcessId** into **ULONG_PTR** so that the process ID can be printed on the console. The next two entries are for threads and the name of the executable.
+
+Since we have converted **sysProc** into **ULONG_PTR**, in order to move to the next entry in **sysProc**, the **reinterpret_cast<BYTE*>(sysProc)** is used. This allows the code to add **NextEntryOffset** as a byte offset. The final **reinterpret_cast<SYSTEM_PROCESS_INFORMATION*>(...)** converts the byte pointer back to a **SYSTEM_PROCESS_INFORMATION*** type, so **sysProc** can be used as before, but now pointing to the next process entry.
+
+```c++
     do {
         wprintf(L"%-10lu %-14lu %-30ls\n",
             
@@ -95,9 +130,6 @@ int main()
         }
         
         // Moves the sysProc pointer from the current SYSTEM_PROCESS_INFORMATION entry to the next one in the buffer.
-        // The reinterpret_cast<BYTE*>(sysProc) allows the code to add NextEntryOffset as a byte offset.
-        // The final reinterpret_cast<SYSTEM_PROCESS_INFORMATION*>(...) converts the byte pointer back to a SYSTEM_PROCESS_INFORMATION* type, 
-        // so sysProc can be used as before, but now pointing to the next process entry.
         sysProc = reinterpret_cast<SYSTEM_PROCESS_INFORMATION*>(reinterpret_cast<BYTE*>(sysProc) + sysProc->NextEntryOffset);
     } while (true);
 
@@ -105,7 +137,6 @@ int main()
     VirtualFree(nisBuf, 0, MEM_RELEASE);
     return true;
 }
-
 ```
 
 <img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/process-enum-4.gif">
