@@ -113,7 +113,7 @@ After defining all the required parameters and allocating the virtual memory, ca
 
 Iterate over each **SYSTEM_PROCESS_INFORMATION** entry in the buffer and print its information. During iteration, when the entry in the array is exhausted, break the loop since there are no processes left to enumerate. As long as the loop continues, cast the original type of **UniqueProcessId** into **ULONG_PTR** so that the process ID can be printed on the console. The next two entries are for threads and the name of the executable.
 
-Since we have converted **sysProc** into **ULONG_PTR**, in order to move to the next entry in **sysProc**, the **reinterpret_cast<BYTE*>(sysProc)** is used. This allows the code to add **NextEntryOffset** as a byte offset. The final **reinterpret_cast<SYSTEM_PROCESS_INFORMATION*>(...)** converts the byte pointer back to a **SYSTEM_PROCESS_INFORMATION*** type, so **sysProc** can be used as before, but now pointing to the next process entry.
+Since we have converted **sysProc** into **ULONG_PTR**, in order to move to the next entry in **sysProc**, the `reinterpret_cast<BYTE*>(sysProc)` is used. This allows the code to add **NextEntryOffset** as a byte offset. The final `reinterpret_cast<SYSTEM_PROCESS_INFORMATION*>(...)` converts the byte pointer back to a **SYSTEM_PROCESS_INFORMATION*** type, so **sysProc** can be used as before, but now pointing to the next process entry.
 
 ```c++
     do {
