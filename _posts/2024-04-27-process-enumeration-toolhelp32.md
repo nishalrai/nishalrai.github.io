@@ -2,13 +2,15 @@
 title: Offensive C++ - Process Enumeration (ToolHelp32 Function)
 author: nirajkharel
 date: 2024-06-05 14:10:00 +0800
-categories: [Red Teaming, Malware Development]
-tags: [Red Teaming, Malware Development]
+categories: [Red Teaming, Offensive Programming]
+tags: [Red Teaming, Offensive Programming]
 render_with_liquid: false
 ---
 
 # Process Enumeration
-Process enumerating is a technique to enumerate running processes on Windows systems. This can be achieved by using the **ToolHelp32** API, which contains the following functions:
+A process refers to an instance of an executable program (.exe file) running on a computer. It involves initializing the program, creating the user interface, and loading necessary drivers and DLLs. Each execution of a program creates a separate process. For instance, opening two browser windows results in two distinct processes, even though they are running the same program. Process enumerating is a technique to enumerate running instances on Windows systems. This can be achieved by using the **ToolHelp32** API, which contains the following functions:
+
+This blog assumes that the reader has a general knowledge of C++ and system internals. For an initial overview, you can refer to [this blog](https://nirajkharel.com.np/posts/offensive-cplusplus-basics/). However, it is still under development.
 
 ## [CreateToolhelp32Snapshot](https://learn.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-createtoolhelp32snapshot)
 This function contains two arguments: **dwFlags** and **th32ProcessID**. There are different values for the dwFlags argument depending on the type of information you would like to save in the snapshot. Since in this blog we are only focused on processes, to include all processes in the system in the snapshot, we will use **TH32CS_SNAPPROCESS**. The next parameter, **th32ProcessID**, is the process identifier of the process that needs to be included in the snapshot. We can use the value 0 to indicate the current process.
@@ -34,6 +36,7 @@ BOOL Process32First(
 
 ## [Process32Next](https://learn.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-process32next)
 This can be used to extract information about the next process recorded on the snapshot. The arguments are same as above.
+
 **SYNTAX**
 ```c++
 BOOL Process32Next(
@@ -94,3 +97,12 @@ Now that we have process information stored in the snapshot, we can retrieve inf
 ```
 
 <img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/process-enum-1.gif">
+
+
+**References**
+- 
+- https://www.youtube.com/watch?v=IZULG6I4z5U&t=1156s
+- https://www.youtube.com/watch?v=nYrtkDU7uUI
+- https://www.youtube.com/watch?v=aNEqC-U5tHM
+- https://www.codeproject.com/Articles/2851/Enumerating-processes-A-practical-approach
+- https://www.irjet.net/archives/V7/i6/IRJET-V7I601.pdf
