@@ -24,7 +24,7 @@ HANDLE CreateToolhelp32Snapshot(
 ```
 
 ## [Process32First](https://learn.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-process32first)
-This can be used to extract information about the first process recorded in the snapshot. It has two arguments: **hSnapshot**, which is the handle returned by **CreateToolhelp32Snapshot**, and lppe, which is the pointer to a **PROCESSENTRY32** structure. This structure contains information about a single process within the snapshot in the system's address space, including the process identifier, parent process identifier, executable file, threads, and much more.
+This can be used to extract information about the first process recorded in the snapshot. It has two arguments: **hSnapshot**, which is the handle returned by **CreateToolhelp32Snapshot**, and **lppe**, which is the pointer to a **PROCESSENTRY32** structure. This structure contains information about a single process within the snapshot in the system's address space, including the process identifier, parent process identifier, executable file, threads, and much more.
 
 **SYNTAX**
 ```c++
