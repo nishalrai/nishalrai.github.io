@@ -87,6 +87,12 @@ Now that we have process information stored in the snapshot, we can retrieve inf
                 << L"\t PPID: " << processEntry.th32ParentProcessID // Prints the parent process ID
                 << L"\t Threads: " << processEntry.cntThreads // Prints the Thread running on the process
                 << L"\t Name: " << processEntry.szExeFile << endl; // Prints an executable running the process
+        
+        // Setting the buffer of processEntry to 0
+        memset(&processEntry, 0, sizeof(processEntry));
+        
+        // Initializing the size of processEntry again.
+        processEntry.dwSize = sizeof(PROCESSENTRY32);
         }
     }
     
