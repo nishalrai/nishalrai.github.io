@@ -48,7 +48,7 @@ int main() {
     WTS_PROCESS_INFO_EX* processInfo; // Pointer to an array of WTS_PROCESS_INFO_EX
     DWORD count; // Store the number of processes enumerated.
 
-    BOOL WTSProcess = WTSEnumerateProcessesEx(WTS_CURRENT_SERVER_HANDLE, &level, WTS_ANY_SESSION, (PWSTR*)&processInfo, &count);
+    BOOL WTSProcess = WTSEnumerateProcessesExA(WTS_CURRENT_SERVER_HANDLE, &level, WTS_ANY_SESSION, (PWSTR*)&processInfo, &count);
 
     // If the function fails, exit the program.
     if (WTSProcess == FALSE){
