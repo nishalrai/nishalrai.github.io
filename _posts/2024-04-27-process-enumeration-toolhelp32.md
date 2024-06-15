@@ -70,6 +70,7 @@ int main() {
 ```
 Now that we have process information stored in the snapshot, we can retrieve information about the first process encountered in a system snapshot using **Process32First**, and the next process using **Process32Next**. We also need to initialize the structure **PROCESSENTRY32** which contains information about a process, such as its ID, parent process ID, number of threads and the executable file name. **dwSize** is set to the size of the **PROCESSENTRY32** structure. This is necessary before using the structure in functions like **Process32First** and **Process32Next**.
 
+I also received a suggestion that the process entry structure variable size should be set to **0** each time before using **Process32Next**, because the last ExeFilePath is an array and some bytes from the previous call to **Process32Next** may remain. This is done to clear the memory before moving to the next process, ensuring that the new entry does not overwrite the previous bytes.
 
 ```c++
     // Define processentry and the size
