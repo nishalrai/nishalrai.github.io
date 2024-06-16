@@ -11,3 +11,5 @@ render_with_liquid: false
 ## Process Injection
 
 // TODO
+
+<img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/proc-injection-1.png">
