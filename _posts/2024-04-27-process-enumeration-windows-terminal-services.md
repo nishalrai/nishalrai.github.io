@@ -134,7 +134,7 @@ Replace the above wprintf statement with:
           pInfo.pProcessName, SidToStringSid(pInfo.pUserSid).c_str());
   }
 ```
-You can further convert that SID into username using [LookUpAccountSidA](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-lookupaccountsida) function.
+You can further convert that SID into username using [LookUpAccountSidW](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-lookupaccountsidw) function.
 
 Before building the project, you will also require to include the dependency **Wtsapi32.lib** on it.
 
