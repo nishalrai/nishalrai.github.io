@@ -9,7 +9,7 @@ render_with_liquid: false
 
 
 ## [Windows Terminal Services - WTS API](https://learn.microsoft.com/en-us/windows/win32/api/wtsapi32/nf-wtsapi32-wtsenumerateprocessesa)
-Windows also contains **WTSEnumerateProcessesExW** function to gather inforamtion about currently active processes on the remote session via RDP or Virualization. It is not necessary for this to work only on a remote machine as it also has the capability to enumerate the running processes remote machine. The target can depend on the value you pass to its handle.
+Windows also contains **WTSEnumerateProcessesExW** function to gather inforamtion about currently active processes on the remote session via RDP or Virualization. It is not necessary for this to work only on a remote machine as it also has the capability to enumerate the running processes local machine. The target can depend on the value you pass to its handle.
 
 This function contains five arguments: **hServer**, **\*pLevel**, **SessionId**, **\*ppProcessInfo**, **\*pCount**. 
 - **hServer**: Opens a handle to open Remote Desktop session to the server. If needed to be done on the local machine, we can specify **WTS_CURRENT_SERVER_HANDLE** value on it.
@@ -40,13 +40,16 @@ The first approach is to define the necessary headers in the code. The header **
 using namespace std;
 ```
 
-Define the flags needed on **WTSEnumerateProcessesEx** as desribed above and create the function. . The return type for the function if failed is **FALSE**. Everything on the code below should be clear other then **(PWSTR*)&processInfo** where **PWSTR** is **Pointer to a Wide String** which are typically 16-bit characters in Windows and the **processInfo** pointer will piont to an array of **WTS_PROCESS_INFO_EX** structures.
+Define the flags needed on **WTSEnumerateProcessesExW** as desribed above and create the function. The function will return **False** if failed and returns non zero if suceeeds. Here on the below code we suggested the program to enumerate the process on the local machine, asked for all the detialed information about the process, defined the pointer to an array of [**WTS_PROCESS_INFO_EX**](https://learn.microsoft.com/en-us/windows/win32/api/wtsapi32/ns-wtsapi32-wts_process_info_exa) structure which contains the information about running processes like SessionId, ProcessId, ProcessName, UserSid, NumberofThreads, HandleCount and much more along with the pointer which points to the variable that contains the number of structures returned by **\*ppProcessInfo**. 
+
+As we know, **&processInfo** is used to obtain the address of the variable which is a pointer to a structure of type **WTS_PROCESS_INFO_EX**. But the function **WTSEnumerateProcessesExW** expects the fourth parameter to be of type **LPWSTR\***, which is a pointer to a wide string (i.e., a wchar_t*). However, **processInfo** is declared as a pointer to a **WTS_PROCESS_INFO_EX structure**. To make **&processInfo** compatible with the function's expected parameter type, we cast **&processInfo** to **LPWSTR\*** using **(LPWSTR\*)&processInfo**. This tells the compiler to treat the address of **processInfo** as a **LPWSTR\***, thus allowing the function to write to the pointer **processInfo** in a way that aligns with its expectations. You can learn more about [pointers here.](https://www.youtube.com/watch?v=h-HBipu_1P0&list=PL2_aWCzGMAwLZp6LMUKI3cc7pgGsasm2_&index=3)
+
 ```c++
 int main() {
 
     HANDLE hMachine = WTS_CURRENT_SERVER_HANDLE; // Use local machine for the enumeration
     DWORD infoLevel = 1; // All detailed information is requested.
-    WTS_PROCESS_INFO_EX* processInfo = nullptr; // Pointer to an array of WTS_PROCESS_INFO_EX
+    WTS_PROCESS_INFO_EX* processInfo; // Pointer to an array of WTS_PROCESS_INFO_EX
     DWORD noOfProcess; // Store the number of processes enumerated.
 
     BOOL WTSProcess = WTSEnumerateProcessesExW(hMachine, &infoLevel, WTS_ANY_SESSION, (LPWSTR*)&processInfo, &noOfProcess);
@@ -56,7 +59,10 @@ int main() {
         return 0;
     }
 ```
-Now that we have created the function and handled the error, we can iterate over the value in **count** variable and print the retrieved information. Since **processInfo** contains the value in array, the code snippet `auto& p = processInfo[i]` iterates the i'th index and assigns it to a variable **pInfo**. The **pInfo** variable holds the informations like Process ID, Session ID, Threads, Process Name.
+
+Now that we have created the function and handled the error, we can iterate over the values in the **noOfProcess** variable and print the retrieved information. Since **processInfo** is an array, the code snippet **auto& pInfo = processInfo[i]** iterates through the `i`th index and assigns it to the variable **pInfo**. 
+
+The **auto&** is used to tell the compiler to figure out the data type of **pInfo** based on the type of **processInfo[i]**, which is **WTS_PROCESS_INFO_EX**. You can also write **WTS_PROCESS_INFO_EX& pInfo = processInfo[i];** instead to explicitly specify the data type. The **pInfo** variable holds information such as Process ID, Session ID, number of Threads, and Process Name.
 
 As per the documentation, while using **WTS_PROCESS_INFO_EX**, we need to free this structure by calling the method **WTSFreeMemory**.
 
@@ -108,8 +114,8 @@ std::wstring SidToStringSid(PSID sid) {
     return L"";
 ```
 
-Call the function **SidToStringSid** on the printf function above and pass the value as **processInfo.pUserSid**. The function **c_str()** is  used when you need to pass the contents of a **std::string** or **std::wstring**, otherwise the SID value will be empty.
-Replace the above printf function with:
+Call the function **SidToStringSid** inside print statement above and pass the value as **processInfo.pUserSid**. The function **c_str()** is  used when you need to pass the contents of a **std::string** or **std::wstring**, otherwise the SID value will be empty.
+Replace the above printf statement with:
 ```c++
   // Just structuring the print format
   wprintf(L"%-14ls %-10ls %-20ls %-30ls\n", L"ProcessID", L"Session", L"Process Name", L"SID");
@@ -118,13 +124,14 @@ Replace the above printf function with:
   //
   for (DWORD i = 0; i < noOfProcess; i++) {
       
-    auto& pInfo = processInfo[i];
+    &auto pInfo = processInfo[i];
       
       wprintf(L"%-14lu %-14lu %-20ls %-30ls\n",
           pInfo.ProcessId, pInfo.SessionId,
           pInfo.pProcessName, SidToStringSid(pInfo.pUserSid).c_str());
   }
 ```
+You can further convert that SID into username using [LookUpAccountSidA](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-lookupaccountsida) function.
 
 Before building the project, you will also require to include the dependency **Wtsapi32.lib** on it.
 <img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/proc-enum-wts-1.png">
@@ -133,3 +140,9 @@ Before building the project, you will also require to include the dependency **W
 <img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/process-enum-2.gif">
 
 Run the code using elevated privileges to enumerate the maximum SIDs.
+
+**References**
+- [https://stackoverflow.com/questions/75605656/how-to-use-the-api-wtsenumerateprocessesexw](https://stackoverflow.com/questions/75605656/how-to-use-the-api-wtsenumerateprocessesexw)
+- [https://www.youtube.com/watch?v=h-HBipu_1P0&list=PL2_aWCzGMAwLZp6LMUKI3cc7pgGsasm2_&index=2](https://www.youtube.com/watch?v=h-HBipu_1P0&list=PL2_aWCzGMAwLZp6LMUKI3cc7pgGsasm2_&index=2)
+- [https://tbhaxor.com/windows-process-listing-using-wtsapi32/](https://tbhaxor.com/windows-process-listing-using-wtsapi32/)
+- [https://www.youtube.com/watch?v=IZULG6I4z5U&t=324s](https://www.youtube.com/watch?v=IZULG6I4z5U&t=324s)
