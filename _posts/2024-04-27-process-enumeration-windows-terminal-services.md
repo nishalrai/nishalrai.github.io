@@ -40,7 +40,7 @@ The first approach is to define the necessary headers in the code. The header **
 using namespace std;
 ```
 
-Define the flags needed on **WTSEnumerateProcessesExW** as desribed above and create the function. The function will return **False** if failed and returns non zero if suceeeds. 
+Define the flags needed on **WTSEnumerateProcessesExW** as desribed above and create the function. The function will return **False** if failed and returns non zero if succeeds. 
 
 Here on the below code we suggested the program to enumerate the process on the local machine, asked for all the detailed information about the process, defined the pointer to an array of [**WTS_PROCESS_INFO_EX**](https://learn.microsoft.com/en-us/windows/win32/api/wtsapi32/ns-wtsapi32-wts_process_info_exa) structure which contains the information about running processes like SessionId, ProcessId, ProcessName, UserSid, NumberofThreads, HandleCount and much more along with the pointer which points to the variable that contains the number of structures returned by **\*ppProcessInfo**. 
 
