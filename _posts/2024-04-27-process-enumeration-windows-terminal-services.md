@@ -2,13 +2,13 @@
 title: Offensive C++ - Process Enumeration (Windows Terminal Services API)
 author: nirajkharel
 date: 2024-06-09 14:10:00 +0800
-categories: [Red Teaming, Malware Development]
-tags: [Red Teaming, Malware Development]
+categories: [Red Teaming, Offensive Programming]
+tags: [Red Teaming, Offensive Programming]
 render_with_liquid: false
 ---
 
 
-## [Windows Terminal Services - WTS API](https://learn.microsoft.com/en-us/windows/win32/api/wtsapi32/nf-wtsapi32-wtsenumerateprocessesa)
+## [Windows Terminal Services - WTS API](https://learn.microsoft.com/en-us/windows/win32/api/wtsapi32/nf-wtsapi32-wtsenumerateprocessesexw)
 Windows also contains **WTSEnumerateProcessesExW** function to gather inforamtion about currently active processes on the remote session via RDP or Virualization. It is not necessary for this to work only on a remote machine as it also has the capability to enumerate the running processes local machine. The target can depend on the value you pass to its handle.
 
 This function contains five arguments: **hServer**, **\*pLevel**, **SessionId**, **\*ppProcessInfo**, **\*pCount**. 
@@ -40,9 +40,11 @@ The first approach is to define the necessary headers in the code. The header **
 using namespace std;
 ```
 
-Define the flags needed on **WTSEnumerateProcessesExW** as desribed above and create the function. The function will return **False** if failed and returns non zero if suceeeds. Here on the below code we suggested the program to enumerate the process on the local machine, asked for all the detialed information about the process, defined the pointer to an array of [**WTS_PROCESS_INFO_EX**](https://learn.microsoft.com/en-us/windows/win32/api/wtsapi32/ns-wtsapi32-wts_process_info_exa) structure which contains the information about running processes like SessionId, ProcessId, ProcessName, UserSid, NumberofThreads, HandleCount and much more along with the pointer which points to the variable that contains the number of structures returned by **\*ppProcessInfo**. 
+Define the flags needed on **WTSEnumerateProcessesExW** as desribed above and create the function. The function will return **False** if failed and returns non zero if suceeeds. 
 
-As we know, **&processInfo** is used to obtain the address of the variable which is a pointer to a structure of type **WTS_PROCESS_INFO_EX**. But the function **WTSEnumerateProcessesExW** expects the fourth parameter to be of type **LPWSTR\***, which is a pointer to a wide string (i.e., a wchar_t*). However, **processInfo** is declared as a pointer to a **WTS_PROCESS_INFO_EX structure**. To make **&processInfo** compatible with the function's expected parameter type, we cast **&processInfo** to **LPWSTR\*** using **(LPWSTR\*)&processInfo**. This tells the compiler to treat the address of **processInfo** as a **LPWSTR\***, thus allowing the function to write to the pointer **processInfo** in a way that aligns with its expectations. You can learn more about [pointers here.](https://www.youtube.com/watch?v=h-HBipu_1P0&list=PL2_aWCzGMAwLZp6LMUKI3cc7pgGsasm2_&index=3)
+Here on the below code we suggested the program to enumerate the process on the local machine, asked for all the detailed information about the process, defined the pointer to an array of [**WTS_PROCESS_INFO_EX**](https://learn.microsoft.com/en-us/windows/win32/api/wtsapi32/ns-wtsapi32-wts_process_info_exa) structure which contains the information about running processes like SessionId, ProcessId, ProcessName, UserSid, NumberofThreads, HandleCount and much more along with the pointer which points to the variable that contains the number of structures returned by **\*ppProcessInfo**. 
+
+As we know, **&processInfo** is used to obtain the address of the variable which is a pointer to a structure of type **WTS_PROCESS_INFO_EX**. But the function **WTSEnumerateProcessesExW** expects the fourth parameter to be of type **LPWSTR\***, which is a pointer to a wide string (i.e., a wchar_t*). However, **processInfo** is declared as a pointer to a **WTS_PROCESS_INFO_EX structure** and to make **&processInfo** compatible with the function's expected parameter type, we cast **&processInfo** to **LPWSTR\*** using **(LPWSTR\*)&processInfo**. This tells the compiler to treat the address of **processInfo** as a **LPWSTR\***, thus allowing the function to write to the pointer **processInfo** in a way that aligns with its definitions. You can learn more about [pointers here.](https://www.youtube.com/watch?v=h-HBipu_1P0&list=PL2_aWCzGMAwLZp6LMUKI3cc7pgGsasm2_&index=3)
 
 ```c++
 int main() {
@@ -86,15 +88,16 @@ As per the documentation, while using **WTS_PROCESS_INFO_EX**, we need to free t
 }
 ```
 
-The method **WTSEnumerateProcessesEx** also contains a capability to retrieve the information about current user running the process. This can be useful while enumerating the privileges for the enumerated processes. For this, we need to use **[ConvertSidToStringSidA](https://learn.microsoft.com/en-us/windows/win32/api/sddl/nf-sddl-convertsidtostringsida)** inorder to convert SID into string format to supply it into **printf** function.
+The method **WTSEnumerateProcessesEx** also contains a capability to retrieve the information about current user running the process. This can be useful while enumerating the privileges for the enumerated processes. For this, we need to use **[ConvertSidToStringSidW](https://learn.microsoft.com/en-us/windows/win32/api/sddl/nf-sddl-convertsidtostringsidw)** inorder to convert SID into printable format to supply it into **wprintf** statement.
 
 **SYNTAX**
 ```c++
-BOOL ConvertSidToStringSidA(
-  [in]  PSID  Sid,
-  [out] LPSTR *StringSid
+BOOL ConvertSidToStringSidW(
+  [in]  PSID  Sid, 
+  [out] LPWSTR *StringSid
 );
 ```
+Here **PSID  Sid** is a pointer to the SID structure which we can supply by providing **pUserSid**. We need to call this function and pass its argument as **pInfo.pUserSid** on the print statment. The next argument **LPWSTR *StringSid** defines the expected output. On this case, by pointing it to wide string i.e Unicode text.
 
 Create a Function to Convert SID into printable format using below code. This function also requires the header **sddl.h** to be added on the header section. `#include <sddl.h>`
 
@@ -102,8 +105,8 @@ Create a Function to Convert SID into printable format using below code. This fu
 //std::wstring to instruct the funtion to return wide string.
 std::wstring SidToStringSid(PSID sid) {
 
-    PWSTR ssid; // Pointer to a Wide String ssid, can also be defined as wchar_t
-    if (ConvertSidToStringSid(sid, &ssid)) {
+    LPWSTR ssid; // Pointer to a Long Pointer to Wide String, can also be defined as wchar_t*
+    if (ConvertSidToStringSidW(sid, &ssid)) {
         std::wstring result(ssid);
         
         // Frees the memory allocated for ssid since it allocates memory for it. It is used to avoid memory leaks.
@@ -114,8 +117,8 @@ std::wstring SidToStringSid(PSID sid) {
     return L"";
 ```
 
-Call the function **SidToStringSid** inside print statement above and pass the value as **processInfo.pUserSid**. The function **c_str()** is  used when you need to pass the contents of a **std::string** or **std::wstring**, otherwise the SID value will be empty.
-Replace the above printf statement with:
+Call the function **SidToStringSid** inside print statement and pass the value as **processInfo.pUserSid**. The function **c_str()** is used when you need to pass the contents of a **std::string** or **std::wstring**, otherwise the SID value will be empty.
+Replace the above wprintf statement with:
 ```c++
   // Just structuring the print format
   wprintf(L"%-14ls %-10ls %-20ls %-30ls\n", L"ProcessID", L"Session", L"Process Name", L"SID");
@@ -134,6 +137,7 @@ Replace the above printf statement with:
 You can further convert that SID into username using [LookUpAccountSidA](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-lookupaccountsida) function.
 
 Before building the project, you will also require to include the dependency **Wtsapi32.lib** on it.
+
 <img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/proc-enum-wts-1.png">
 
 <br>
