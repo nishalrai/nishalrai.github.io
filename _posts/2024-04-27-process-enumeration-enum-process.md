@@ -2,8 +2,8 @@
 title: Offensive C++ - Process Enumeration (EnumProcess Function)
 author: nirajkharel
 date: 2024-06-10 14:10:00 +0800
-categories: [Red Teaming, Malware Development]
-tags: [Red Teaming, Malware Development]
+categories: [Red Teaming, Offensive Programming]
+tags: [Red Teaming, Offensive Programming]
 render_with_liquid: false
 ---
 
