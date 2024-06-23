@@ -13,8 +13,8 @@ Windows also contains the additional API **EnumProcesses** to gather the process
 
 This function contains three arguments: **\*lpidProcess**, **cb** and **lpcbNeeded**. 
 - **\*lpidProcess**: It is a pointer which points to an array that contains the list of running processes.
-- **cb**: It stores the size of array defined to contain the list of running processes.
-- **lpcbNeeded**: Contains the size about the number of bytes retured by the the function.
+- **cb**: It stores the size of array in bytes. Initially we will define the size as 1024 or 2048 since we do not have an idea about the number of the process running on the system.
+- **lpcbNeeded**: Its an output parameter that will recive the number of bytes used or required in the array.
 
 **SYNTAX**
 ```c++
@@ -25,8 +25,7 @@ BOOL EnumProcesses(
 );
 ```
 
-We will break down codes into different chunk to understand it on better way.
-The first approach is to define the necessary headers in the code. The header **Psapi.h** is used to initialize the needed functions.
+We will break down codes into different chunks to understand it better. The first approach is to define the necessary headers in the code. The header **Psapi.h** is used to initialize the needed functions.
 ```c++
 #include <Windows.h>
 #include <iostream>
@@ -54,6 +53,7 @@ int main() {
         return 0;
     }
 ```
+
 Now that we have created the function and handled the error, we need to calculate the number of items returned in the array. Since the variable **bytesNeeded** contains the size of bytes returned by the function, we can divide it by the size of **DWORD** to calculate the number of items in it. **sizeof(DWORD)** returns the size of a single process ID in bytes, which is typically 4 bytes. By dividing the total number of bytes **bytesNeeded** by the size of each item **sizeof(DWORD)**, you get the number of items in the array. Once we have that, we can iterate over the values in the **numOfProcesses** variable and print the retrieved information. Note that it will only print the running process IDs on the system.
 
 ```c++
@@ -69,6 +69,8 @@ Now that we have created the function and handled the error, we need to calculat
 ```
 
 In order to retrieve additional information along with PIDs, we can make use of the **[QueryFullProcessImageNameA](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-queryfullprocessimagenamea?redirectedfrom=MSDN)** function to enumerate the image name, i.e., the executable path of the process. However, since it needs the **hProcess** handle to the process, it can only be accessed after we open a handle using the **[OpenProcess](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-openprocess)** function. We can pass the enumerated process ID into the **OpenProcess** method and we can pass the **PROCESS_QUERY_LIMITED_INFORMATION** flags on `dwDesiredAccess` to get certain information from the process handle, for example, **QueryFullProcessImageName**, which contains the names of the executables.
+
+<img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/process-enum-3.png">
 
 **SYNTAX**
 ```c++
@@ -109,7 +111,6 @@ BOOL QueryFullProcessImageNameA(
 ```
 <br>
 
-Finally, the above For Loop would be:
 ```c++
 // Loop through the number of process and print every entrry from it.
 for (DWORD i = 0; i < numOfProcesses; i++) {
@@ -139,3 +140,11 @@ for (DWORD i = 0; i < numOfProcesses; i++) {
 <img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/process-enum-3.gif">
 
 Run the code using elevated privileges to enumerate the maximum Image Path.
+
+
+## References
+- [https://www.youtube.com/watch?v=IZULG6I4z5U](https://www.youtube.com/watch?v=IZULG6I4z5U)
+- [https://learn.microsoft.com/en-us/windows/win32/psapi/enumerating-all-processes](https://learn.microsoft.com/en-us/windows/win32/psapi/enumerating-all-processes)
+- [https://medium.com/@s12deff/find-processes-with-enumprocesses-52ef3c07446a](https://medium.com/@s12deff/find-processes-with-enumprocesses-52ef3c07446a)
+- [https://unprotect.it/technique/detecting-running-process-enumprocess-api/](https://unprotect.it/technique/detecting-running-process-enumprocess-api/)
+- [https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-enumprocesses](https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-enumprocesses)
