@@ -1,7 +1,7 @@
 ---
 title: Offensive C++ - Process Modules Enumeration
 author: nirajkharel
-date: 2024-06-30 14:10:00 +0800
+date: 2024-06-26 14:10:00 +0800
 categories: [Red Teaming, Offensive Programming]
 tags: [Red Teaming, Offensive Programming]
 render_with_liquid: false
