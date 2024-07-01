@@ -40,7 +40,7 @@ Let's break down the flags needed for `NtQuerySystemInformation`:
 - `PULONG ReturnLength`: This is an optional parameter that contains a pointer to the location where the acquired information length is written. It can be declared as `nullptr`.
 
 
-**Important:** Before compiling the Native API functions into our code, we need to integrate the Native API definitions, which are not built-in within C++ or Visual Studio. We can get them through the GitHub repository maintained by the developers of **[Process Hacker 2](https://github.com/winsiderss/systeminformer)**. You need to download and place all the header files within your project directory.
+**Important:** Before compiling the Native API functions into our code, we need to integrate the Native API definitions, which are not built-in within C++ or Visual Studio. We can get them through the GitHub repository maintained by **[Winsiderss](https://github.com/winsiderss/systeminformer)**. You need to download and place all the header files within your project directory.
 
 Or, if you want to use Native APIs for multiple projects, you can do it via **[Vcpkg](https://github.com/microsoft/vcpkg/releases)**, which is an open-source C/C++ dependency manager.
 
