@@ -9,8 +9,7 @@ render_with_liquid: false
 
 
 ## Process Injection
-
-// TODO
+It is a technique to inject malicious code (can be on any form, ex shellcode, DLLs) into the legitimate process. It executes the code in the address space of the running process 
 
 <img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/proc-injection-1.png">
 

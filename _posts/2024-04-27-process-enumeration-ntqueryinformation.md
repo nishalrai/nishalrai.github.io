@@ -13,13 +13,9 @@ Most of the time, when we develop code to interact with the Windows API, we use 
 
 To understand Native APIs properly, one first needs to understand the different types of modes in the Windows system: user mode and kernel mode. User application code runs in user mode, whereas OS code (such as system services and device drivers) runs in kernel mode. Kernel mode refers to a mode of execution in a processor that grants access to all system memory and all CPU instructions. Using Win32 APIs in malware is easily spotted by antivirus and EDR systems because these APIs are well-documented and can be tracked for unusual activity.
 
-So, how can user mode access kernel mode? There is no direct way to access it. This is achieved through the **Win32 API**, which translates requests into the **NT API** and then passes them to the **Kernel**.
+The Native API is exported by a library called **Ntdll.dll** in a user mode and from **Ntoskrnl.lib** library in the kernel mode. A user mode application can use native system services by invoking entry points in the **Ntdll.dll** library, these entry points translate calls to **Nt** and **ZW** routine into the system calls that transition to kernel model. Learn about [**Nt** and **ZW** here.](https://learn.microsoft.com/en-us/windows-hardware/drivers/kernel/what-does-the-zw-prefix-mean-?redirectedfrom=MSDN) 
 
-The Native API is exported by a library called **Ntdll.dll**. This library is the final stop that most of our Windows API functions end up in after being called from **Kernel32.dll** before reaching the threshold into the kernel space.
-
-When you call a function like **ReadFile** or **OpenProcess**, these functions are exported by a library called **Kernel32.dll** and end up in **Ntdll.dll**. However, we can use **kernelbase.dll** to forward the calls down to the **Ntdll.dll** API, which acts as a proxy between user mode and kernel mode.
-
-**Win32API (ReadFile) -> kernel32!ReadFile() -> kernelbase!ReadFile() [kernelbase.dll works as a proxy] -> ntdll!NtReadFile() -> Syscall -> Kernel mode tasks.**
+As user mode applications typically don't directly call the **Nt** and **Zw** routines. Usually they invoke the windows API, which then calls a native system service routine such as **NtReadFile** or **ZwReadFile** to perform the requested operation. Example, when you call a function like **ReadFile** or **OpenProcess**, the request initially goes through **Kernel32.dll**, is often forwarded to **KernelBase.dll**, and finally reaches **Ntdll.dll**. **Ntdll.dll** then converts these calls into system calls, making the actual transition to kernel mode. This cordination ensures that user-mode applications can efficiently perform operations that require kernel mode intervention.
 
 I also suggest you to go through this blog to have a brief overview on the Native API **[Inside the Native API](http://mirrors.arcadecontrols.com/www.sysinternals.com/Information/NativeApi.html)**. Also [Crow](https://www.youtube.com/watch?v=P1PHRcmPM7c&t=2395s) has explained about this on interesting way.
 
@@ -141,3 +137,12 @@ Since we have converted **sysProc** into **ULONG_PTR**, in order to move to the 
 ```
 
 <img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/process-enum-4.gif">
+
+
+**References**
+- [https://learn.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/user-mode-and-kernel-mode](https://learn.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/user-mode-and-kernel-mode)
+- [https://www.geoffchappell.com/studies/windows/win32/ntdll/api/native.htm](https://www.geoffchappell.com/studies/windows/win32/ntdll/api/native.htm)
+- [https://learn.microsoft.com/en-us/windows-hardware/drivers/kernel/libraries-and-headers](https://learn.microsoft.com/en-us/windows-hardware/drivers/kernel/libraries-and-headers)
+- [https://learn.microsoft.com/en-us/windows-hardware/drivers/kernel/what-does-the-zw-prefix-mean-?redirectedfrom=MSDN](https://learn.microsoft.com/en-us/windows-hardware/drivers/kernel/what-does-the-zw-prefix-mean-?redirectedfrom=MSDN)
+- [https://www.youtube.com/watch?v=P1PHRcmPM7c&t=1871s](https://www.youtube.com/watch?v=P1PHRcmPM7c&t=1871s)
+- [https://www.youtube.com/watch?v=HEKcrGUnu-c&t=60s](https://www.youtube.com/watch?v=HEKcrGUnu-c&t=60s)
