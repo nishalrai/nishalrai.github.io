@@ -127,7 +127,7 @@ Once we are ready with the function and its parameters, let's define it inside o
     printf("Allocated the memory into virtual space");
 ```
 
-**Write Buffer into the Allocated Memory -** **[WriteProcessMemory]**(https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-writeprocessmemory)
+**Write Buffer into the Allocated Memory -** **[WriteProcessMemory](https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-writeprocessmemory)**
 Once we have allocated our memory into the virtual address space, the next process is to write the buffer (shellcode) into that memory space. In order for this function to execute successfully, the handle to the process must contain **PROCESS_VM_WRITE** and **PROCESS_VM_OPERATION** access. Therefore, it is necessary to define such access while creating a handle to the process using **OpenProcess**. The return type for this function when it succeeds is nonzero and returns 0 when it fails. It contains five parameters in which four are input parameters and one is output.
 
 **SYNTAX**
@@ -236,7 +236,8 @@ DWORD WaitForSingleObject(
 ```
 
 <br>
-<img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/process-injection-shellcode.gif">
+<img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/proc-injection-shellcode.gif">
+<br>
 
 **References**
 - [https://www.crow.rip/crows-nest/mal/dev/inject/shellcode-injection](https://www.crow.rip/crows-nest/mal/dev/inject/shellcode-injection)
