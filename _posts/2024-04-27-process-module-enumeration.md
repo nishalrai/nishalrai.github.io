@@ -9,13 +9,13 @@ render_with_liquid: false
 
 
 ## Module Enumeration
-We have already discussed different ways to enumerate processes, and one additional enumeration crucial for offensive programming is the enumeration of modules inside processes. Modules are generally DLL files and can be used to perform attacks such as DLL injections. Here, we will discuss the way to enumerate and load the DLL files (modules) associated with a specified process using the **[EnumProcessModules](https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-enumprocessmodules)** function.
+We have already discussed different ways to enumerate processes, and one additional enumeration crucial for offensive programming is the enumeration of modules inside processes. Modules are generally DLL files loaded for the process. Here, we will discuss the way to enumerate and load the DLL files (modules) associated with a specified process using the **[EnumProcessModules](https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-enumprocessmodules)** function.
 
 The image below can describe the flow that we will cover in order to enumerate the modules. First, we need to enumerate all processes using either of the methods. Once we have the process ID, we pass that ID to open a handle to the process with **OpenProcess**. We will then use that handle with **EnumProcessModules**, which opens handles to the modules within that process. Both the process handle and module handles are passed to **GetModuleFileNameExA**, which enumerates the fully qualified path for the file containing the specified module.
 
 
 <br>
-<img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/process-enum-5.png">
+<img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/dll-enumeration.png">
 
 ### Enumerate Process Ids
 We have previously discussed the enumeration of processes and their entities such as process IDs and process names in previous blogs. You can refer to this link for more information on the **[ToolHelp32](https://nirajkharel.com.np/posts/process-enumeration-toolhelp32/)** function. Process enumeration can also be achieved using other methods like the **[Windows Terminal Services API](https://nirajkharel.com.np/posts/process-enumeration-windows-terminal-services/)**, **[EnumProcess](https://nirajkharel.com.np/posts/process-enumeration-enum-process/)**, or **[NtQuerySystemInformation](https://nirajkharel.com.np/posts/process-enumeration-ntqueryinformation/)**.
@@ -145,3 +145,12 @@ Before calling the `GetModuleFileNameExA` function, we need to iterate through t
 
 <br>
 <img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/process-enum-5.gif">
+
+
+**References**
+- [https://learn.microsoft.com/en-us/windows/win32/psapi/enumerating-all-modules-for-a-process](https://learn.microsoft.com/en-us/windows/win32/psapi/enumerating-all-modules-for-a-process)
+- [https://www.youtube.com/watch?v=kEIE91kpsGg](https://www.youtube.com/watch?v=kEIE91kpsGg)
+- [https://medium.com/@stackzero/how-to-do-process-enumeration-an-alternative-way-stackzero-fad874477cda#:~:text=Process%20enumeration%20is%20a%20key,legitimate%20processes%20to%20evade%20detection.](https://medium.com/@stackzero/how-to-do-process-enumeration-an-alternative-way-stackzero-fad874477cda#:~:text=Process%20enumeration%20is%20a%20key,legitimate%20processes%20to%20evade%20detection.)
+- [https://www.codereversing.com/archives/265](https://www.codereversing.com/archives/265)
+- [https://giodicanio.com/2024/06/10/how-to-enumerate-the-modules-loaded-in-a-process/](https://giodicanio.com/2024/06/10/how-to-enumerate-the-modules-loaded-in-a-process/)
+- [https://www.codeproject.com/Articles/2262/Process-Module-and-Thread-enumeration-classes](https://www.codeproject.com/Articles/2262/Process-Module-and-Thread-enumeration-classes)
