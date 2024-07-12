@@ -16,6 +16,9 @@ APC (Asynchronous Procedure Call) on Windows involves threads having `APC queues
 
 As shown in the image above, we first need to create a process, example Notepad.exe, in a `suspended` state. A suspended state allows a process to be opened but interrupts its normal execution. Once the process is opened, we can obtain a handle to it and its threads. We use `VirtualAllocEx` to allocate memory for the code and `WriteProcess` to write our shellcode into that virtual address space. Instead of using `CreateRemoteThreadEx`, we implement `QueueUserAPC` to queue our malicious code as an APC on the main thread of the process. Then, we resume the thread using the `ResumeThread` function. When `ResumeThread` is called, the Windows system starts with the APC queue created, executing our malicious code without executing the main code on the thread.
 
+<br>
+<img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/proc-injection-queueUserAPC.gif">
+<br>
 
 ## References
 - [https://www.youtube.com/watch?v=aMkMkkClXVc&t=468s](https://www.youtube.com/watch?v=aMkMkkClXVc&t=468s)
