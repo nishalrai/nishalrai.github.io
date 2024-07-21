@@ -9,9 +9,9 @@ render_with_liquid: false
 
 
 ## Process Injection - DLL Injection
-DLL Injection falls under process injection techniques. Unlike loading shellcode into a running process, DLL Injection involves injecting and loading a malicious DLL into the running process.
+DLL Injection is a kind of process injection techniques but unlike loading shellcode into a running process, DLL Injection involves injecting and loading a malicious DLL into the running process.
 
-**What is DLL?**
+**What is DLL?**    
 Think of it as libraries needed to run a program. These libraries can be used by different programs at the same time. But in order to use such libraries/DLL/modules, a program needs to have them imported while compiling their code. When the DLL is loaded, it will execute the main function within the DLL, which is **DllMain**. Here in the image below, we can see the list of modules/DLLs that a program can have, for example, for `Calc.exe`.
 
 <img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/proc-injection-dll-inject-2.png">
@@ -19,7 +19,7 @@ Think of it as libraries needed to run a program. These libraries can be used by
 Or, you can go through the [blog](https://nirajkharel.com.np/posts/process-module-enumeration/) I wrote before to enumerate the loaded DLLs/modules in the running process.
 
 As we discussed earlier, `DllMain` serves as the entry point function for each loaded DLL. Let's explore what `DllMain` is and how we can create our own malicious DLL:
-- Create a new project and select **Dynamic-Link Library** as the project type.
+- On Microsoft Visual Code Studio, create a new project and select **Dynamic-Link Library** as the project type.
 - Open the project, and you will be presented with default code for the DLL.
 
 
@@ -103,5 +103,12 @@ Compile the code and execute the DLL using **rundll32.exe**. You should see that
 <img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/proc-injection-dll-inject-4.png">
 
 Now that we have our malicious DLL ready, let’s go through the process of injecting it into a running process.
+
+With our malicious DLL compiled, we first create a handle to the target process using **OpenProcess**. We then use that handle to allocate virtual address space in the memory of the running process with **VirtualAllocEx** and write the path of the DLL file into this memory using **WriteProcessMemory**.
+
+Once that is done, we need to load the DLL into memory. We have written the DLL path into the memory using **WriteProcessMemory**, and now we use **CreateRemoteThread** to execute the **LoadLibrary** API. This will load the DLL specified by the path on the buffer address into the target process. **CreateRemoteThread** provides a handle to the newly created thread, which executes the DLL loading function.
+
+By doing this, we successfully inject the DLL into the running process.
+
 
 <img alt="" class="bf jp jq dj" loading="lazy" role="presentation" src="https://raw.githubusercontent.com/nirajkharel/nirajkharel.github.io/master/assets/img/images/proc-injection-dll-inject.png">
