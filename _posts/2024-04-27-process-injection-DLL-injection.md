@@ -178,10 +178,70 @@ Once we have allocated memory in the virtual address space, the next task is to 
 ```
 
 ### LoadLibrary
+While injecting shellcode into the running process, we directly wrote our shellcode into the allocated memory address. However, DLLs do not work that way. As described in the image above, it needs to be done through the **LoadLibraryA** function, which loads the specified DLL into the address space of the calling process. Keep in mind that writing the DLL path into the memory address and loading the DLL into the memory address are two different things.
+
+The **LoadLibraryA** function is part of the Kernel32.dll APIs. In order to use it, we need to get a handle to Kernel32.dll first using **GetModuleHandle**. This function takes a single parameter, which is the name of the DLL/module for which the handle needs to be obtained.
+
+Once we have a handle to Kernel32.dll, we need to access the address of **LoadLibraryA** from Kernel32.dll. This is done using the **GetProcAddress** function. It takes two parameters: the first one is a handle to the module, and the second one is the name of the function we need to use, derived from the module to which the handle is opened.
+
+
+```c++
+// Load kernel32.dll in the current process
+HMODULE hKernel32 = GetModuleHandle(L"kernel32.dll");
+
+// Get the address of LoadLibraryA from kernel32.dll
+FARPROC loadLibAddress = GetProcAddress(hKernel32, "LoadLibraryA");
+```
+
+Then, if we need to implement **LoadLibraryA** to load the DLL, why was **WriteProcessMemory** even needed? The answer is described in the paragraph below.
 
 ### CreateRemoteThread
+Understand this method as the way to create a specific thread inside our target process in order to load and execute our DLL. We will not discuss every parameter needed for the **CreateRemoteThread** function here, as we have already discussed them in the [previous blog](https://nirajkharel.com.np/posts/process-injection-shellcode/#execute-the-shellcode---createremotethreadex). The only differences are the fourth and fifth parameters, which we will discuss below:
+
+- **LPTHREAD_START_ROUTINE lpStartAddress**: Defines the start address of the allocated memory, but Microsoft requires this to be an application-defined function of type `LPTHREAD_START_ROUTINE`. This `LPTHREAD_START_ROUTINE` is what will provide the starting address for the thread and is documented under [ThreadProc](https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms686736(v=vs.85)?redirectedfrom=MSDN). We discussed earlier that the thread can execute any portion of the memory in the process, but it's obvious that we need to instruct the thread which portion to execute. This can be done by that routine. Since we need our thread to start executing from the starting portion of the allocated memory, the value for it will be `(LPTHREAD_START_ROUTINE)loadLibAddress`.
+
+    **Why LoadLibrary is implemented here?**: The **LoadLibrary** function is implemented to load the DLL into the address space of the target process. By specifying **LoadLibrary** as the start address, the thread will begin execution by calling this function, ensuring that the DLL is properly loaded into the target process.
+
+- **LPVOID lpParameter**: If we want to pass a variable to the thread, we need to pass the pointer to the variable, which will be the allocated memory `lpAlloc`.
+
+    **Reason for giving `lpAlloc` as the parameter**: The `lpAlloc` memory contains the path of the DLL that we want to load. By passing `lpAlloc` as the parameter to **LoadLibrary**, we provide the necessary path information that **LoadLibrary** needs to locate and load the DLL. This is why **WriteProcessMemory** was used earlier: to place the DLL path in the target process's memory so that **LoadLibrary** can access it.
+
+When we configure these two arguments, **CreateRemoteThread** will execute the **LoadLibrary** function, and **LoadLibrary** will take the parameter from `lpAlloc`, which contains the file path of the DLL. This file path was written by the **WriteProcessMemory** function.
+
+```c++
+HMODULE LoadLibraryA(
+  [in] LPCSTR lpLibFileName
+);
+```
+
+That makes our CreateRemoteThread as:
+
+```c++
+
+// Needed parameter for CreateRemoteThread
+LPTHREAD_START_ROUTINE threadStartRoutineAddress = (LPTHREAD_START_ROUTINE)loadLibAddress;
+
+// Start new thread on the process
+HANDLE hThread = CreateRemoteThread(hProcess, NULL, 0, threadStartRoutineAddress, lpAlloc, 0, NULL);
+if (hThread == NULL) {
+    printf("Error injecting DLL into the process, %u\n", GetLastError());
+    return 1;
+}
+printf("Successfully injected DLL into the Process\n");
+```
 
 ### WaitForSingleObject and CloseHandle
+Wait for the thread to finish and close the handles to the thread and process. Please refer to [this blog](https://nirajkharel.com.np/posts/process-injection-shellcode/#waitforsingleobject) for more details regarding this.
+```c++
+waitForSingleObject(hThread, INFINITE);
+
+CloseHandle(hThread);
+CloseHandle(hProcess);
+return 0;
+}
+```
+
+Find the full [source code here:](https://github.com/nirajkharel/OffensiveProgramming/blob/main/DLL-Injection-C%2B%2B.cpp)
 
 
 <br>

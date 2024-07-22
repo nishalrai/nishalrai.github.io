@@ -211,6 +211,7 @@ HANDLE CreateRemoteThreadEx(
   	}
 ```
 
+### WaitForSingleObject
 Once we have executed our thread, we need to close the handle to the thread and the process as well. But how does the program know when to close the thread and process? This is where the function **[WaitForSingleObject](https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject)** comes in. This function waits until the thread completes its execution and then the program proceeds further to close the handle to the process and thread.
 
 **SYNTAX**
