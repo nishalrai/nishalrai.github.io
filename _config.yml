@@ -19,34 +19,33 @@ timezone: Asia/Kathmandu
 # jekyll-seo-tag settings › https://github.com/jekyll/jekyll-seo-tag/blob/master/docs/usage.md
 # ↓ --------------------------
 
-title: Niraj Kharel                         # the main title
-
-tagline: Find My Offensive Security Blogs   # it will display as the sub-title
-
+title: Nishal Rai                         # the main title
+tagline: Unsupervised and Reinforced Learning   # it will display as the sub-title
 description: >-                        # used by seo meta and the atom feed
-  Vulnerability Assessment, Penetration Testing, HackTheBox, HTB.
+    NISHAL RAI | F5-BIGIP-CTS-ASM | F5-BIGIP-201 | test@gmail.com Kathmandu, Nepal
+
 
 # fill in the protocol & hostname for your site, e.g., 'https://username.github.io'
-url: 'https://nirajkharel.com.np'
+url: 'https://nishalrai.com.np'
 
 github:
-  username: nirajkharel            # change to your github username
+  username: nishalrai            # change to your github username
 
 twitter:
-  username: nirajkharel7            # change to your twitter username
+  #username:            # change to your twitter username
 
 social:
   # Change to your full name.
   # It will be displayed as the default author of the posts and the copyright owner in the Footer
-  name: Niraj Kharel
-  email: thenirajkharel@gmail.com             # change to your email address
+  name: Nishal Rai
+  email: test@gmail.com             # change to your email address
   links:
     # The first element serves as the copyright owner's link
-    - https://twitter.com/nirajkharel7     # change to your twitter homepage
-    - https://github.com/nirajkharel      # change to your github homepage
+    #- https://twitter.com/    # change to your twitter homepage
+    - https://github.com/nishalrai      # change to your github homepage
     # Uncomment below to add more social links
-    - https://medium.com/@nirajkharel
-    - https://www.linkedin.com/in/nirajkharel/
+    - https://medium.com/@nitratic
+    - https://www.linkedin.com/in/nishalrai
 
 google_site_verification:               # fill in to your verification string
 
@@ -71,14 +70,14 @@ google_analytics:
 #     light  - Use the light color scheme
 #     dark   - Use the dark color scheme
 #
-theme_mode:    [dark]
+theme_mode:    [light]
 
 # The CDN endpoint for images.
 # Notice that once it is assigned, the CDN url
 # will be added to all image (site avatar & posts' images) paths starting with '/'
 #
 # e.g. 'https://cdn.com'
-img_cdn: 'https://avatars.githubusercontent.com'
+#img_cdn: 'https://avatars.githubusercontent.com'
 
 # the avatar on sidebar, support local or CORS resources
 avatar: '/u/47778874?v=4'
