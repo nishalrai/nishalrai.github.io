@@ -3,7 +3,7 @@ title: Introducing Ingress Controllers - An Essential Insights
 description: >-
   Get started with Chirpy basics in this comprehensive overview.
   You will learn how to install, configure, and use your first Chirpy-based website, as well as deploy it to a web server.
-author: nisharai
+author: nishalrai
 date: 2024-03-05 20:55:00 +0800
 categories: [Cloud Native, Microservice]
 tags: [getting started]
@@ -17,8 +17,7 @@ Most of us have heard about the ingress controller at least once when Kubernetes
 
 Before we begin to learn about ingress controllers, it is essential to first grasp the fundamentals to create a framework for a better understanding of the subject. In Kubernetes, the smallest manageable unit is the pod. Think of it as a small box where you can put your applications or containers. But here’s the catch: pods don’t stick around forever. They can be easily removed or replaced using something called a deployment or a manifest file.
 
-```YAML
-
+```
 apiVersion: v1
 kind: Pod
 metadata:
@@ -55,13 +54,16 @@ Now, when we create a pod in the Kubernetes cluster. It gets its own special IP 
 
 That’s where Kubernetes services come into the picture. They’re like the post office for pods. They group together a bunch of pods and give them one fixed address that never changes, making it easy for other pods to find them. This fixed address can be used both inside the cluster (by the Pods) and from outside (the external user).
 
-![kubernetes](/assets/img/images/k8s/info.png){: width="519" height="408" }
+![kubernetes](/assets/img/images/k8s/info.png){: width="600" height="400"}
 
 So, whether pods are moving around or being replaced, services make sure everything stays connected.
 
-> In Kubernetes, service objects are handled by the control plane, primarily by the kube-api server. When the user fetches the service manifest file to the cluster, the Kubernetes API server processes and creates the service object. This definition is then stored in the Kubernetes datastore called etcd. Thus. Services are not placed inside Pods and when the user makes a service, Kubernetes gives it an IP address and takes care of sending traffic to the right pods linked to that service.
+> Note:
+In Kubernetes, service objects are handled by the control plane, primarily by the kube-api server. When the user fetches the service manifest file to the cluster, the Kubernetes API server processes and creates the service object. This definition is then stored in the Kubernetes datastore called etcd. Thus. Services are not placed inside Pods and when the user makes a service, Kubernetes gives it an IP address and takes care of sending traffic to the right pods linked to that service.
 
-![](/assets/img/images/k8s/cluster-info.png){: width="519" height="408"}
+<br>
+
+![](/assets/img/images/k8s/cluster-info.png){: width="600" height="400"}
 
 There are different types of services to choose from, depending on how you want to connect to your pods, which includes:
 - **ClusterIP**
@@ -71,6 +73,7 @@ There are different types of services to choose from, depending on how you want 
 
 Each type has its own way of connecting pods with their own challenges and usage in the Kubernetes cluster. Here, we will only discuss the NodePort, LoadBalancer, and ClusterIP types of Kubernetes service, which are used to manage traffic to applications running within the cluster.
 
+<br>
 
 # NodePort:
 NodePort-type service assigns a specific port on all nodes (virtual or physical machines) in the Kubernetes cluster. This port falls within the range of 30,000 to 32,767.
@@ -79,10 +82,10 @@ Any traffic directed to this port is forwarded to the service. If the port isn�
 
 NodePort is primarily used in development or testing environments.
 
-![](/assets/img/images/k8s/nodePort.png){: width="519" height="408"}
+![](/assets/img/images/k8s/nodePort.png){: width="600" height="400"}
 
 The sample manifest file of nodePort service type:
-```YAML
+```
 apiVersion: v1
 kind: Service
 metadata:
@@ -96,16 +99,17 @@ spec:
       targetPort: 3000
       nodePort: 31000
 ```
+<br>
 
 # ClusterIP
 ClusterIP is the default service type in Kubernetes. It provides accessibility to associated Pods from other Pods within the cluster but does not allow external access. Connections are made using internal cluster IP addresses and ports.
 
-![](/assets/img/images/k8s/clusterIP.png){: width="519" height="408"}
+![](/assets/img/images/k8s/clusterIP.png){: width="500" height="380"}
 
 So why does this such service type exist in the first place, if no user can access the pods externally? Well, on the contrary, ClusterIP is the most used service type in the Kubernetes cluster and will be discussed in the latter section.
 
 The sample manifest file of ClusterIP service type:
-```YAML
+```
 apiVersion: v1
 kind: Service
 metadata:
@@ -118,14 +122,15 @@ spec:
     - port: 80
       targetPort: 80
 ```
+<br>
 
 # LoadBalancer
 LoadBalancer service functions similarly to a ClusterIP service but opens a port on every node in the cluster, allowing external access. This external accessibility is facilitated through a LoadBalancer implementation provided by the cloud provider. Unlike NodePort, LoadBalancer evenly distributes inbound requests across nodes, enhancing scalability and load distribution. However, deploying a LoadBalancer for each exposed service can significantly increase expenses, as each service gets its own IP address.
 
-![](/assets/img/images/k8s/loadbalancer.png){: width="519" height="408"}
+![](/assets/img/images/k8s/loadbalancer.png){: width="480" height="350"}
 
 The sample of LoadBalancer service type manifest file:
-```YAML
+```
 apiVersion: v1
 kind: Service
 metadata:
@@ -148,7 +153,7 @@ So, you might be wondering, why do I need to know about all this stuff, especial
 
 
 By understanding the limitations of each type of Kubernetes service discussed earlier, we can appreciate how the ingress controller steps in to solve those problems and make our lives a whole lot easier.
-
+<br>
 
 # So, what is an ingress controller?
 In the context of Kubernetes, controllers are essential components responsible for maintaining the desired state of objects within the cluster. The Ingress controller is responsible for regulating the inbound traffic to the cluster based on the rules defined by the user in the ingress resources.
@@ -159,19 +164,21 @@ Ingress resources are like blueprints that tell the ingress controller how to di
 
 ## Why do we need ingress controller in the first place?
 
-![](/assets/img/images/k8s/serviceTypes.png){: width="519" height="408"}
+![](/assets/img/images/k8s/serviceTypes.png){: width="600" height="400"}
 
 In a setup resembling a microservice architecture, instead of exposing individual Pods using nodePort and relying on external load balancers or direct requests through nodePort, we can employ an ingress controller within the Kubernetes (k8s) cluster.
 Rather than using an external proxy or load balancer situated outside the k8s cluster, we introduce a proxy as a Pod within the cluster. This proxy Pod, known as the ingress controller, manages traffic based on predefined rules. To facilitate connectivity, it requires a serviceObject associated with an external load balancer.
 This configuration simplifies matters, necessitating only a single public IP address and the potential risk of change in the ip address of the nodePort request. When a request is directed to the load balancer, it ultimately reaches the proxy pod, with all routing rules defined within it termed as ingress resources.
 While Ingress Resources are native to Kubernetes and supported by the platform, Ingress Controllers are third-party providers such as nginx, HAProxy, Istio, and others.
 
-![](/assets/img/images/k8s/ingressController.png){: width="519" height="408"}
+![](/assets/img/images/k8s/ingressController.png){: width="480" height="350"}
 
-> The ingress controller can be deployed either as a deployment or daemon set. In a deployment, replicas are set in the configuration file, while in daemon sets, Kubernetes ensures at least one ingress controller Pod is running on each node.
+> Note:
+The ingress controller can be deployed either as a deployment or daemon set. In a deployment, replicas are set in the configuration file, while in daemon sets, Kubernetes ensures at least one ingress controller Pod is running on each node.
 
 To clarify, Ingress, Ingress Rules, and Ingress Resources manage external access to services in the cluster, primarily for HTTP traffic. They handle load balancing, SSL termination, and name-based virtual hosting. Ingress Controllers, on the other hand, are responsible for implementing these rules, typically with a load balancer, to manage traffic within the cluster.
 
+<br>
 
 ## How is the nginx proxy-server different from the nginx ingress controller?
 The primary purpose of typical nginx porxy server and nginx ingress controller is identical to each other, however, unlike proxy servers like HAProxy or nginx, which require reloading after configuration changes, the Nginx Ingress controller doesn’t need reloading. It continuously monitors the service and strives to maintain the desired state defined by the IngressResource. When a user modifies the ingressResource, the ingressController applies those changes. As a result, it operates autonomously without the need for reloading like other proxy servers.
@@ -181,8 +188,7 @@ If there’s an error in the configuration, users can view the logs of the nginx
 
 The sample manifest file of the ingress controller – creating a Pod, service and an ingress resource for the ingress controller.
 
-```YAML
-
+```
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -241,8 +247,7 @@ spec:
 
 Some of the helpful commands to view the logs, ingress resources and pods in the Kubernetes cluster.
 
-```SHELL
-
+```bash
 kubectl get namespaces
 kubectl get pods -n <name-space>
 kubectl logs <pod>/<pod-name> -n <name-space>
@@ -250,6 +255,8 @@ kubectl get ingress
 kubectl describe <ingress-name>
 kubectl exec -it <pod>/<pod-name> -n nginx-ingress -- bash
 ```
+
+<br>
 
 # References
 - https://kubernetes.io/docs/concepts/services-networking/service/

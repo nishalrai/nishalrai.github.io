@@ -22,7 +22,7 @@ timezone: Asia/Kathmandu
 title: Nishal Rai                         # the main title
 tagline: Unsupervised and Reinforced Learning   # it will display as the sub-title
 description: >-                        # used by seo meta and the atom feed
-    NISHAL RAI | F5-BIGIP-CTS-ASM | F5-BIGIP-201 | test@gmail.com Kathmandu, Nepal
+    NISHAL RAI | F5-BIGIP-CTS-ASM | F5-BIGIP-201 | nishalrai2056@gmail.com Kathmandu, Nepal
 
 
 # fill in the protocol & hostname for your site, e.g., 'https://username.github.io'
@@ -80,7 +80,7 @@ theme_mode:    [light]
 #img_cdn: 'https://avatars.githubusercontent.com'
 
 # the avatar on sidebar, support local or CORS resources
-avatar: '/u/47778874?v=4'
+avatar: '/assets/img/avatar.webp'
 
 # boolean type, the global switch for ToC in posts.
 toc: true
