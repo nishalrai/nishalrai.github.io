@@ -1,9 +1,9 @@
 ---
 title: Accessing the victim’s computer using the Msvenom
-author: Nishal Rai
+author: nishalrai
 date: 2022-08-17 20:55:00 +0800
 categories: [Offensive]
-tags: [getting started]
+tags: [offensive, msvenom]
 ---
 
 Before we begin the practical assessment of the attack by using Msvenom which is a Metasploit framework, we need to understand the actual work going behind the attack. We are trying to access the victim’s computer which is currently running Windows 7 as Operating System.This practical assessment will be conducted by creating a virtual environment within the computer and then configuring each and every necessary device within the virtual environment. To perform this remote access control hacking using Msvenom, we need to install GNS3, VMWare or VirtualBox which will host any Linux distros (Kali Linux, Parrot OS & other) – I will be using Kali Linux 2020 and then a victim’s computer where Windows 7 is used for this assessment.When you have installed GNS3 on your computer then you need to make a simple topology as shown in the figure to carry out the operation.

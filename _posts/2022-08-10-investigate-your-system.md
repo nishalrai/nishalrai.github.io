@@ -1,9 +1,9 @@
 ---
 title: Investigate and confirm the status of your System
-author: Nishal Rai
+author: nishalrai
 date: 2022-08-16 20:55:00 +0800
-categories: [F5 Networks, Visaulization]
-tags: [getting started]
+categories: [Offensive, Forensics]
+tags: [forensics]
 ---
 
 Investigate and confirm whether the system is under attack or just being paranoid ie. e client in a cooperative environment – Want to know how and where to start from? Follow these steps to be almost sure of the issue.

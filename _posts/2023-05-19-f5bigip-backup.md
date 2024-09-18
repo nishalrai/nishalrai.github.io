@@ -1,9 +1,6 @@
 ---
 title: Automate the backup of F5 BIG-IP – UCS, SCF and SSL
-description: >-
-  Get started with Chirpy basics in this comprehensive overview.
-  You will learn how to install, configure, and use your first Chirpy-based website, as well as deploy it to a web server.
-author: nisharai
+author: nishalrai
 date: 2023-05-19 20:55:00 +0800
 categories: [F5 Networks, Backup]
 tags: [getting started]

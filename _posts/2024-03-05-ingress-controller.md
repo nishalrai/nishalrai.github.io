@@ -1,12 +1,9 @@
 ---
 title: Introducing Ingress Controllers - An Essential Insights
-description: >-
-  Get started with Chirpy basics in this comprehensive overview.
-  You will learn how to install, configure, and use your first Chirpy-based website, as well as deploy it to a web server.
 author: nishalrai
 date: 2024-03-05 20:55:00 +0800
 categories: [Cloud Native, Microservice]
-tags: [getting started]
+tags: [getting started, kubernetes]
 ---
 
 Most of us have heard about the ingress controller at least once when Kubernetes was the topic of the talk and I aim to demystify a fundamental understanding of the ingress controller in this post by answering:

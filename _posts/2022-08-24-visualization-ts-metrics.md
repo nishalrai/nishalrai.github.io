@@ -1,9 +1,9 @@
 ---
 title: Visualization of F5 BIG-IP metrics on Grafana using Prometheus and Telemetry Streaming service
-author: Nishal Rai
+author: nishalrai
 date: 2022-08-24 20:55:00 +0800
 categories: [F5 Networks, Visaulization]
-tags: [getting started]
+tags: [getting started, visualization]
 ---
 
 This user guide is all about configuration and deployment of telemetry streaming service on F5 BIG-IP device and scraps those metrics by Prometheus which will be finally visualized by the Grafana. One can select the relevant metrics scraped by the Prometheus and visualize them on the Grafana which will be demonstrated later in the guide.

@@ -1,12 +1,9 @@
 ---
 title: Introduction to DNS | How it works
-description: >-
-  Get started with Chirpy basics in this comprehensive overview.
-  You will learn how to install, configure, and use your first Chirpy-based website, as well as deploy it to a web server.
-author: nisharai
+author: nishalrai
 date: 2023-08-1 20:55:00 +0800
 categories: [F5 Networks, DNS]
-tags: [getting started]
+tags: [getting started, dns]
 ---
 
 This would be a series of DNS service to provide a holistic view of DNS working, configuration practices, security threats, and mitigation. As one should be aware, DNS has been a really engaging topic to explore, and I will be documenting the useful findings about it.

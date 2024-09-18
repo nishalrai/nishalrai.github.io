@@ -6,7 +6,7 @@ description: >-
 author: nishalrai
 date: 2024-02-27 20:55:00 +0800
 categories: [Cloud Native, Microservice]
-tags: [getting started, Kubernetes]
+tags: [getting started, kubernetes]
 image: /assets/img/images/k8s/k8sOverview.png
 ---
 

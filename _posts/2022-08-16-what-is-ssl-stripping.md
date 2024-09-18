@@ -1,9 +1,9 @@
 ---
 title: what is SSL stripping method?
-author: Nishal Rai
+author: nishalrai
 date: 2022-08-16 20:55:00 +0800
-categories: [F5 Networks, Visaulization]
-tags: [getting started]
+categories: [Offensive]
+tags: [ssl]
 ---
 
 # ssl stripping, is it a potential threat? How does it work and what are the precaution to avoid such an attack?

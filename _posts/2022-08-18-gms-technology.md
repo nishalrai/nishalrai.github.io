@@ -1,9 +1,9 @@
 ---
 title: History of GSM Technology
-author: Nishal Rai
+author: nishalrai
 date: 2022-08-18 20:55:00 +0800
-categories: [F5 Networks, Visaulization]
-tags: [getting started]
+categories: [GSM]
+tags: [telecommunication]
 ---
 
 The major events of the GSM Technology Development from the early 1980s to the 2000s.

@@ -1,9 +1,6 @@
 ---
 title: Get Microsoft Certified AZ-900 (Free-of-Cost)
-description: >-
-  Get started with Chirpy basics in this comprehensive overview.
-  You will learn how to install, configure, and use your first Chirpy-based website, as well as deploy it to a web server.
-author: nisharai
+author: nishalrai
 date: 2023-01-17 20:55:00 +0800
 categories: [F5 Networks]
 tags: [getting started]

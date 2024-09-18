@@ -1,12 +1,9 @@
 ---
 title: DNS Record Types | Hands on DNS authoritative server configuration
-description: >-
-  Get started with Chirpy basics in this comprehensive overview.
-  You will learn how to install, configure, and use your first Chirpy-based website, as well as deploy it to a web server.
 author: nisharai
 date: 2023-08-04 20:55:00 +0800
 categories: [F5 Networks, DNS]
-tags: [integration, getting-started]
+tags: [integration, getting started]
 ---
 
 Before we jump into the dns record types, there are few terminology to be familiar with:

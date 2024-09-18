@@ -1,12 +1,9 @@
 ---
 title: Integration of AS3 and TS extension of F5 BIG-IP with Azure Sentinel
-description: >-
-  Get started with Chirpy basics in this comprehensive overview.
-  You will learn how to install, configure, and use your first Chirpy-based website, as well as deploy it to a web server.
-author: nisharai
+author: nishalrai
 date: 2023-06-25 20:55:00 +0800
 categories: [F5 Networks, Azure]
-tags: [integration]
+tags: [integration, azure]
 ---
 
 One can leverage the usage of Azure Sentinel to collect and display the data using the Telemetry streaming extension on the F5 BIG-IP device. Azure Sentinel is able to collect the logs from the F5 BIG-IP via Telemetry Streaming regardless of its deployed location – F5 BIG-IP does not need to be on Azure to fetch those logs.
