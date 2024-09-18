@@ -28,8 +28,11 @@ The configuration involves both TS and AS3 extensions for different purposes –
 
 On the F5 BIG-IP device, the required modules to be enabled are ASM, AVR and iRulesLX.
 
+![](/assets/img/images/f5/f5sentinel.png){: width="600" height="400"}
 > NOTE:
 The version on which the configuration is carried out is F5 BIG-IP v16.3.3 and v17.0.1
+
+![](/assets/img/images/f5/f5sentinel2.png){: width="600" height="400"}
 
 ## Install the TS and AS3 extension on the F5 BIG-IP device
 You need to download TS and AS3 extension and upload on your F5 BIG-IP device.
@@ -53,8 +56,7 @@ AS3 and TS extension is used to configure F5 BIG-IP with the necessary resources
 
 The JSON declaration to configure to the following configuration object – Virtual Server, Pool, Node, iRule, Request Logging and Request log.
 
-```JSON
-
+```
 {
 	"class": "ADC",
 	"schemaVersion": "3.45.0",
