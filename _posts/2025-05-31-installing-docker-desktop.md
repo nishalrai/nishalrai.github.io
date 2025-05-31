@@ -120,3 +120,8 @@ To start the Docker Desktop form Powershell:<br>
 - Installing Docker Desktop on another drive is perfectly safe and helps keep your C: drive light.
 - Make sure you always run PowerShell as Administrator for these steps.
 
+<br>
+
+# Reference
+- https://stackoverflow.com/questions/75727062/how-to-install-docker-desktop-on-a-different-drive-location-on-windows
+- https://docs.docker.com/desktop/setup/install/windows-install/#install-from-the-command-line
