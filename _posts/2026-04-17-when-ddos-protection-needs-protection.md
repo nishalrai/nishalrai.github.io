@@ -5,9 +5,10 @@ description: >-
 author: nishalrai
 date: 2026-04-17 10:55:00 +0800
 categories: [DDoS, Automation]
-tags: [ddos mitigation]
+tags: [ddos mitigation, automation]
 ---
 
+# Building an event correlation layer around GenieATM for better DDoS operations
 In DDoS defense, getting the appliance deployed is rarely the end of the story. In many environmentrs especially in telecom, banking and large distributed infrastructures, the real challenge starts after the platform is already in place. Detection begins to work, alerts begin to flow, baselines start learning, and then operations team realize something important: the appliance is detecting, but is it not neccessarily helping them decide fast enough. 
 
 That being said, this article is not meant to be **another deep dive into DDoS attack types, packet anatomy, or protocol behavior**. It is about something more operationally painful: what happens after deploying a DDoS solution, when the solution itself starts becoming part of the operational problem.
@@ -16,7 +17,7 @@ The discussion is based on real implementation pattern, but all sensitive detail
 
 <br>
 
-# The Problem Was Not Detection Alone
+## The Problem Was Not Detection Alone
 
 *DDoS, or Distributed Denial of Service*, remains one of the most visible threats in today’s security landscape. With the rapid growth of compute power, cheap bot infrastructure, and large attack surfaces across internet-facing services, operators are now dealing with mixed traffic patterns, sudden surges in ingestion volume, and an increasingly noisy detection environments.
 
@@ -28,11 +29,11 @@ The original appliance was doing, what it was designed to do: collecting telemet
 
 At one stage, the event volume and alerting behavior became noisy enough that the DDoS protection stack itself started creating operational fatigue. The issue was no longer only about attack traffic. It was about what happended after the platform raised the event.
 
-![](/assets/img/images/ddos/n8n/emailAnomaly.png){: width="600" height="400"}
+![](/assets/img/images/ddos/n8n/emailAnomaly.png){: width="1200" height="800"}
 
 <br>
 
-# A Quick Look at the Deployment Context
+## A Quick Look at the Deployment Context
 I think it would be useful to breifly explain the environment to stay on the same page before moving forward.
 
 DDoS detection and mitigation deployments generally fall into two broad models:
@@ -61,7 +62,6 @@ Once suspicious behavior is detected, traffic can be redirected or mitigation ac
 [More details about the GenieATM Networks](https://www.genie-networks.com/) 
 
 <br>
-
 
 ## Where the Real Pain Started
 From my experience working across security consulting engagements and multiple vendor platforms, one of the most critical parts of any deployment is not just understanding the product, but understanding the client’s actual problem context.
@@ -199,14 +199,14 @@ The first step was straightforward.
 
 Create a Discord server, create a dedicated channel, and configure a webhook on that channel. Since the webhook is bound per channel, it also gives a clean way to separate event sources and reporting outputs later.
 
-![](/assets/img/images/ddos/n8n/discord.png){: width="600" height="400"}
+![](/assets/img/images/ddos/n8n/discord.png){: width="1200" height="800" .shadow}
 
 
 On the GenieATM side, the webhook can then be configured through:
 
 **Preferences → Notification → Webhook → Create New**
 
-![](/assets/img/images/ddos/n8n/genieatm-webhook.png){: width="600" height="400"}
+![](/assets/img/images/ddos/n8n/genieatm-webhook.png){: width="1200" height="800" .shadow}
 
 Once the Discord webhook URL is copied into GenieATM, anomaly events can start flowing into the selected channel.
 
@@ -234,13 +234,13 @@ Two subdomains were used in this design.
 
 While publshing the application with the new newly created sub-domain for later integration with n8n docker coantiner running on `http://localhost:5678`
 
-![](/assets/img/images/ddos/n8n/cloudflare00.png){: width="600" height="400"}
+![](/assets/img/images/ddos/n8n/cloudflare00.png){: width="1200" height="800" .shadow}
 
 This separation is important.
 
 If only the main n8n interface is published and protected, then interactive access works, but webhook communication may break under strict access enforcement. On the other hand, if the entire application is broadly exposed for webhook compatibility, the n8n login portal becomes unnecessarily reachable from the internet.
 
-![](/assets/img/images/ddos/n8n/cloudflare01.png){: width="600" height="400"}
+![](/assets/img/images/ddos/n8n/cloudflare01.png){: width="1200" height="800" .shadow}
 
 [More Info: Cloudflare Application - Access Control](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/self-hosted-public-app/)
 
@@ -252,11 +252,11 @@ The cleaner design was:
   - /webhook
   - /api/v1
 
-![](/assets/img/images/ddos/n8n/cloudflare02.png){: width="600" height="400"}
+![](/assets/img/images/ddos/n8n/cloudflare02.png){: width="1200" height="800" .shadow}
 
 This kept the editor protected while still allowing machine-to-machine webhook flow.
 
-![](/assets/img/images/ddos/n8n/cloudflare03.png){: width="600" height="400"}
+![](/assets/img/images/ddos/n8n/cloudflare03.png){: width="1200" height="800" .shadow}
 
 <br>
 
@@ -311,7 +311,7 @@ sudo docker run -d \
 For public sharing, all real usernames, passwords, FQDNs, tokens, internal paths, and infrastructure-specific values should be masked or replaced with placeholders.
 <br>
 
-![](/assets/img/images/ddos/n8n/n8n.png){: width="600" height="400"}
+![](/assets/img/images/ddos/n8n/n8n.png){: width="1200" height="800" .shadow}
 
 <br>
 
@@ -327,8 +327,8 @@ The process was simple:
 - authorize it into the owned Discord server
 
 
-![](/assets/img/images/ddos/n8n/discord00.png){: width="600" height="400"}
-![](/assets/img/images/ddos/n8n/discord01.png){: width="600" height="400"}
+![](/assets/img/images/ddos/n8n/discord00.png){: width="1200" height="800" .shadow}
+![](/assets/img/images/ddos/n8n/discord01.png){: width="1200" height="800" .shadow}
 
 Once the URL are generated and the copied OAuth2 URL is opened on another browser tabs, with authorization prompt request to the suers, then the bot appears online in the owned Discord server and can participate in the workflow trigger process.
 
@@ -363,7 +363,7 @@ This article is not meant to fully document the OpenSearch installation process,
 
 <br>
 
-![](/assets/img/images/ddos/n8n/opensearch.png){: width="600" height="400"}
+![](/assets/img/images/ddos/n8n/opensearch.png){: width="1200" height="800" .shadow}
 
 <br>
 
@@ -371,8 +371,8 @@ This article is not meant to fully document the OpenSearch installation process,
 
 By default, n8n does not provide native Discord message trigger behavior for this exact use case, so the community node `n8n-nodes-discord-trigger` was installed. You can install by selecting the **Settings** options in the n8n, and select the "Community Nodes", then install by browsing to the "n8n-nodes-discord-trigger" and setup the credential to work.
 
-![](/assets/img/images/ddos/n8n/n8n00.png){: width="600" height="400"}
-![](/assets/img/images/ddos/n8n/n8n01.png){: width="600" height="400"}
+![](/assets/img/images/ddos/n8n/n8n00.png){: width="1200" height="800" .shadow}
+![](/assets/img/images/ddos/n8n/n8n01.png){: width="1200" height="800" .shadow}
 
 Once that was available, the workflow operated as follows:
 
@@ -393,7 +393,7 @@ A sanitized example of the API pattern would look like:
 
 <br>
 
-![](/assets/img/images/ddos/n8n/n8n02.png){: width="600" height="400"}
+![](/assets/img/images/ddos/n8n/n8n02.png){: width="1200" height="800" .shadow}
 
 >[!Note]
 One important operational note from this workflow: if MFA is enabled on the GenieATM local user being used for the API query, the automated API call may fail depending on the platform configuration. In this case, a dedicated integration user without MFA enforcement may be required, depending on product behavior and policy constraints.
@@ -516,11 +516,11 @@ And in DDoS operations, that matters.
 <br>
 
 
-![anomaly event decision - likely false positve](/assets/img/images/ddos/n8n/discord02.png){: width="600" height="400"}
+![anomaly event decision - likely false positve](/assets/img/images/ddos/n8n/discord02.png){: width="1200" height="800" .shadow}
 
-![anomaly event decision - likely false positve](/assets/img/images/ddos/n8n/discord04.png){: width="600" height="400"}
+![anomaly event decision - likely false positve](/assets/img/images/ddos/n8n/discord04.png){: width="1200" height="800" .shadow}
 
-![anomaly event decision - likely attack](/assets/img/images/ddos/n8n/discord03.png){: width="600" height="400"}
+![anomaly event decision - likely attack](/assets/img/images/ddos/n8n/discord03.png){: width="1200" height="800" .shadow}
 
 This was the real value of the added stack.
 
@@ -529,7 +529,6 @@ This was the real value of the added stack.
 
 But an operational layer that reduced friction between detection and decision-making.
 
-<br>
 
 # Closing Thoughts
 
