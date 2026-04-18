@@ -4,15 +4,16 @@ icon: fas fa-info-circle
 order: 4
 ---
 
-# NISHAL RAI | F5-CTS-ASM | F5-201
-**nishalrai2056@gmail.com**<br>
+# NISHAL RAI | Cybersecurity Engineer
+**sudo@nishalrai.com.np**<br>
 **Kathmandu, Nepal**
 
 ## PROFESSIONAL SUMMARY
-As an application security professional with expertise in F5 BIG-IP (ASM, LTM, DNS), NGINX Plus, and Windows services, I specialize in enhancing performance and security for public services. My experience includes containerization, microservices architecture, vulnerability mitigation, and implementing robust network designs. With proficiency in Python, Bash, and open-source tools like Grafana, Prometheus, and Zabbix, I deliver comprehensive solutions and training while collaborating with cross-functional teams to ensure secure, resilient systems.
+Cybersecurity engineer with over four years of experience designing and securing enterprise and financial infrastructures, including two years leading application security team and operations. Strong background in customer-facing consulting roles with deep proficiency in F5 LTM, ASM, AFM, Viprion, iRules, and AFM with IP Intelligence, complemented by experience with NGINX+, Fortinet, Forcepoint, and GenieATM. Skilled in OSI L5–L7 operations, HTTP/S, SSL/TLS management, and web server administration (NGINX, IIS). My experience includes containerization, microservices architecture, vulnerability mitigation, and implementing robust network designs. I deliver comprehensive solutions and training while collaborating with cross-functional teams to ensure secure, resilient systems.
+
 
 ### SKILLS
-- **Tools & Technology**: F5 BIG-IP (ASM, DNS, APM, AFM, LTM), GenieATM, NGINX+, K8s, Docker, Burpsuite, Nmap, Nuclei, Packet Analysis, Windows IIS server, CCNA (Routing & Switching)
+- **Tools & Technology**: F5 BIG-IP (ASM, DNS, APM, AFM, LTM), GenieATM, NGINX+, Forecpoint DLP, Forti(Web, ADC, Gate), K8s, Docker, Burpsuite, Nmap, Nuclei, Packet Analysis, Windows IIS server, CCNA (Routing & Switching)
 - **Programming Language**: Java, Python
 - **Monitoring Tool**: Grafana, Prometheus, Wazuh, Zabbix
 - **Security Framework**: NIST CSF, PCI DSS
@@ -24,11 +25,12 @@ As an application security professional with expertise in F5 BIG-IP (ASM, LTM, D
 ## WORK HISTORY
 
 **Team Lead Security Solution Engineer | Digital Network Solution Pvt. Ltd. - Kathmandu, Bagmati** `11/2023 - Current`  
-- Lead and oversee the deployment and support of F5 BIG-IP WAF and BIG-IQ, ensuring successful implementation across multiple institutions.
-- Generate support reports, conduct Root Cause Analysis (RCA), and recommend improvements based on findings.
-- Mentor team members, provide technical expertise, and ensure adherence to company policies and security best practices.
-- Deliver comprehensive training on application security, infrastructure optimization, and advanced threat mitigation strategies
-- Conduct research and development `(R&D)` on emerging vulnerabilities and security technologies, aligning findings with client environments to implement preemptive mitigation strategies 
+- Led multi-vendor security solution deployments across banking and enterprise clients, managing F5 BIG-IP (LTM, AFM, ASM, DNS), NGINX Plus, Forti(Gate, ADC, Web), and Forcepoint implementations with consistent project delivery timelines and client satisfaction metrics.
+- Established incident response protocols through detailed root cause analysis of critical security events, producing technical documentation and remediation strategies that improved organizational security postures across client environments.
+- Developed a technical mentorship program for engineering team members, delivering application security training sessions emphasizing threat mitigation, security administration best practices, and compliance adherence within Nepal's financial and government services sector.
+- Managed threat intelligence initiatives by tracking emerging vulnerabilities and security technologies, coordinating research and development activities with client requirements to deploy effective countermeasures, and enhancing incident response capabilities.
+- Integrated SIEM and ELK Stack monitoring infrastructure to provide real-time security visibility and automated anomaly detection, strengthening client incident management workflows and threat response efficiency.
+- Coordinated compliance initiatives with internal audit teams and client stakeholders to ensure adherence to ISO 27001, Nepal Financial Reporting Standards (NFRS), and Nepal Rastra Bank cybersecurity guidelines for financial institutions
 
 <br>
 
@@ -60,6 +62,9 @@ Higher Secondary: Science
 
 
 ## CERTIFICATIONS
+- Fortinet FortiWeb 7.4 Administrator (FCP_FWB_AD-7.4)
+- F5 Certified Technology Specialist in LTM (F5-CTS-LTM)
+- Forcepoint DLP Administrator
 - AWS Certified Solutions Architect Associate (SAA-C03)
 - F5 Certified Technology Specialist in ASM (F5-CTS-ASM)
 - F5 TMOS Administration (F5-201)
