@@ -3,7 +3,7 @@ title: When DDoS Protection Starts Hurting Operations
 description: >-
   This article focuses on the operational design decisions behind enhancing an existing DDoS deployment. All infrastructure identifiers, IP addresses, interface labels, domains, and event values shown here have been sanitized and replaced with dummy data for safe public sharing..
 author: nishalrai
-date: 2026-04-18 10:55:00 +0800
+date: 2026-04-17 10:55:00 +0800
 categories: [DDoS, Automation]
 tags: [ddos mitigation]
 ---
