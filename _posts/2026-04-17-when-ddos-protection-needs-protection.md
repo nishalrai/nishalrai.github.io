@@ -3,23 +3,20 @@ title: When DDoS Protection Starts Hurting Operations
 description: >-
   This article focuses on the operational design decisions behind enhancing an existing DDoS deployment. All infrastructure identifiers, IP addresses, interface labels, domains, and event values shown here have been sanitized and replaced with dummy data for safe public sharing..
 author: nishalrai
-date: 2026-04-18 20:55:00 +0800
+date: 2026-04-18 10:55:00 +0800
 categories: [DDoS, Automation]
-tags: [ddos mitigation, automation]
+tags: [ddos mitigation]
 ---
-
-# Building an event correlation layer around GenieATM for better DDoS operations
-<br>
 
 In DDoS defense, getting the appliance deployed is rarely the end of the story. In many environmentrs especially in telecom, banking and large distributed infrastructures, the real challenge starts after the platform is already in place. Detection begins to work, alerts begin to flow, baselines start learning, and then operations team realize something important: the appliance is detecting, but is it not neccessarily helping them decide fast enough. 
 
-That being said, this article is not meant to be <span style="color:red">**another deep dive into DDoS attack types, packet anatomy, or protocol behavior** </span>. It is about something more operationally painful: what happens after deploying a DDoS solution, when the solution itself starts becoming part of the operational problem.
+That being said, this article is not meant to be **another deep dive into DDoS attack types, packet anatomy, or protocol behavior**. It is about something more operationally painful: what happens after deploying a DDoS solution, when the solution itself starts becoming part of the operational problem.
 
 The discussion is based on real implementation pattern, but all sensitive details, *including IP addresses, hostnames, interface names, router labels, URLs, and traffic-specific identifiers, have been replaced with dummy values for safe public sharing.*
 
 <br>
 
-## The Problem Was Not Detection Alone
+# The Problem Was Not Detection Alone
 
 *DDoS, or Distributed Denial of Service*, remains one of the most visible threats in today’s security landscape. With the rapid growth of compute power, cheap bot infrastructure, and large attack surfaces across internet-facing services, operators are now dealing with mixed traffic patterns, sudden surges in ingestion volume, and an increasingly noisy detection environments.
 
@@ -35,7 +32,7 @@ At one stage, the event volume and alerting behavior became noisy enough that th
 
 <br>
 
-## A Quick Look at the Deployment Context
+# A Quick Look at the Deployment Context
 I think it would be useful to breifly explain the environment to stay on the same page before moving forward.
 
 DDoS detection and mitigation deployments generally fall into two broad models:
