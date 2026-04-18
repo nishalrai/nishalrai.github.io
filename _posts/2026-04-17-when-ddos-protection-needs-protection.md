@@ -8,7 +8,7 @@ categories: [DDoS, Automation]
 tags: [ddos mitigation, automation]
 ---
 
-In DDoS defense, getting the appliance deployed is rarely the end of the story. In many environmentrs especially in telecom, banking and large distributed infrastructures, the real challenge starts after the platform is already in place. Detection begins to work, alerts begin to flow, baselines start learning, and then operations team realize something important: the appliance is detecting, but is it not neccessarily helping them decide fast enough. 
+In DDoS defense, getting the appliance deployed is rarely the end of the story. In many environments especially in telecom, banking and large distributed infrastructures, the real challenge starts after the platform is already in place. Detection begins to work, alerts begin to flow, baselines start learning, and then operations team realize something important: the appliance is detecting, but is is not neccessarily helping them decide fast enough. 
 
 That being said, this article is not meant to be **another deep dive into DDoS attack types, packet anatomy, or protocol behavior**. It is about something more operationally painful: what happens after deploying a DDoS solution, when the solution itself starts becoming part of the operational problem.
 
@@ -21,25 +21,25 @@ The discussion is based on real implementation pattern, but all sensitive detail
 
 Banking, telecom, and government sectors continue to face these attacks more frequently than most others. The motives vary, but financial disruption and activism still remain among the most common. In many of these environments, the challenge is not simply whether traffic can be detected as suspicious. The challenge is whether the detection output is useful for the operator to act on without wasting time, missing real incidents, or drowing in false positives.
 
-> That was the exact problem. we started facing in our environment.
+> That was the exact problem, which we started facing in our environment.
 
 The original appliance was doing, what it was designed to do: collecting telemetry, identifying anomalies, and producing event notifications, but operationally, the result became difficult to consume at scale.
 
-At one stage, the event volume and alerting behavior became noisy enough that the DDoS protection stack itself started creating operational fatigue. The issue was no longer only about attack traffic. It was about what happended after the platform raised the event.
+At one stage, the event volume and alerting behavior became noisy enough that the DDoS protection stack itself started creating operational fatigue. The issue was no longer only about attack traffic. It was about what happend after the platform raised the event.
 
 ![](/assets/img/images/ddos/n8n/emailAnomaly.png){: width="1200" height="800" .shadow .rounded-3}
 
 <br>
 
 # A Quick Look at the Deployment Context
-I think it would be useful to breifly explain the environment to stay on the same page before moving forward.
+I think it would be useful to briefly explain the environment to stay on the same page before moving forward.
 
 DDoS detection and mitigation deployments generally fall into two broad models:
 
 - **Inline deployment**, which is more common across enterprise environments, where traffic passes directly through mitigation infrastructure.  
 - **Out-of-band deployment**, which is usually more appropriate for highly distributed network environments, where traffic telemetry is collected from multiple network points and analyzed centrally before mitigation decisions are pushed elsewhere.
 
-The environement discussed here falls into the second category - **out-of-band deployment.**
+The environment discussed here falls into the second category - **out-of-band deployment.**
 
 
 A **GenieATM Controller and Collector architecture** was used. In that model:
